@@ -1,0 +1,12 @@
+# Flutter/Dart
+.dart_tool/
+.build/
+.packages
+.pub/
+.idea/
+.vscode/
+*.iml
+# Generated files
+**/generated_plugin_registrant.dart
+# Assets
+assets/models/*.tflite
