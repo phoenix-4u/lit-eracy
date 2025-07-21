@@ -1,54 +1,70 @@
-from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from datetime import timedelta
 from typing import Optional
-from jose import JWTError, jwt
-from ..utils.security import verify_password, get_password_hash
-from ..crud import get_user_by_email
 
-SECRET_KEY = "your-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from .. import crud, schemas
+from ..database import get_db
+from ..utils.auth import decode_access_token, create_access_token
 
 
-from ..database import SessionLocal
+# Security scheme
+security = HTTPBearer()
 
-async def authenticate_user(email: str, password: str):
-    db = SessionLocal()
-    user = get_user_by_email(db, email)
-    db.close()
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-from fastapi import HTTPException, status
-
-async def get_current_user(token: str):
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+) -> schemas.UserResponse:
+    """Get current authenticated user"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        token = credentials.credentials
+        payload = decode_access_token(token)
+        if payload is None:
+            raise credentials_exception
+            
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-    except JWTError:
+            
+    except Exception:
         raise credentials_exception
-    db = SessionLocal()
-    user = get_user_by_email(db, email)
-    db.close()
+    
+    user = crud.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
-    return user
+    
+    return schemas.UserResponse.model_validate(user)
+
+
+async def get_current_active_user(
+    current_user: schemas.UserResponse = Depends(get_current_user)
+) -> schemas.UserResponse:
+    """Get current active user"""
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+def authenticate_user_service(db: Session, email: str, password: str) -> Optional[schemas.UserResponse]:
+    """Authenticate user service"""
+    user = crud.authenticate_user(db, email, password)
+    if user:
+        return schemas.UserResponse.model_validate(user)
+    return None
+
+
+def create_access_token_service(email: str) -> str:
+    """Create access token for user"""
+    access_token_expires = timedelta(minutes=30)
+    access_token = create_access_token(
+        data={"sub": email}, expires_delta=access_token_expires
+    )
+    return access_token

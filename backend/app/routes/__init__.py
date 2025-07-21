@@ -1,4 +1,3 @@
-from .auth import router as auth
-from .content import router as content
-from .achievements import router as achievements
-from .users import router as users
+from . import auth, users, content, achievements
+
+__all__ = ["auth", "users", "content", "achievements"]
