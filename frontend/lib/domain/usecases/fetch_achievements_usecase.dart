@@ -1,11 +1,14 @@
-import '../../data/repositories/content_repository.dart';
-import '../../data/models/achievement_model.dart';
+import 'package:dartz/dartz.dart';
+import 'package:lit_eracy/core/errors/failures.dart';
+import 'package:lit_eracy/domain/models/achievement.dart';
+import 'package:lit_eracy/domain/repository/content_repository.dart';
 
 class FetchAchievementsUseCase {
-  final ContentRepository _repo;
-  FetchAchievementsUseCase(this._repo);
+  final ContentRepository repository;
 
-  Future<List<AchievementModel>> execute(int userId) {
-    return _repo.fetchAchievements(userId);
+  FetchAchievementsUseCase(this.repository);
+
+  Future<Either<Failure, List<Achievement>>> execute(int userId) async {
+    return await repository.fetchAchievements(userId);
   }
 }

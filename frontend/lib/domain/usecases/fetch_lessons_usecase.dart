@@ -1,12 +1,14 @@
-import '../../data/repositories/content_repository.dart';
-import '../../data/models/lesson_model.dart';
+import 'package:dartz/dartz.dart';
+import 'package:lit_eracy/core/errors/failures.dart';
+import 'package:lit_eracy/domain/models/lesson.dart';
+import 'package:lit_eracy/domain/repository/content_repository.dart';
 
 class FetchLessonsUseCase {
-  final ContentRepository _repo;
+  final ContentRepository repository;
 
-  FetchLessonsUseCase(this._repo);
+  FetchLessonsUseCase(this.repository);
 
-  Future<List<LessonModel>> execute(int grade) {
-    return _repo.fetchLessons(grade);
+  Future<Either<Failure, List<Lesson>>> execute(int grade) async {
+    return await repository.fetchLessons(grade);
   }
 }

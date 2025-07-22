@@ -1,17 +1,8 @@
 part of 'achievement_bloc.dart';
 
-abstract class AchievementEvent extends Equatable {
-  const AchievementEvent();
-
-  @override
-  List<Object> get props => [];
-}
+abstract class AchievementEvent {}
 
 class LoadAchievements extends AchievementEvent {
   final int userId;
-
-  const LoadAchievements(this.userId);
-
-  @override
-  List<Object> get props => [userId];
+  LoadAchievements(this.userId);
 }
