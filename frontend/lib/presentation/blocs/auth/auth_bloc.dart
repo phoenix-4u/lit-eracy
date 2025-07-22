@@ -1,5 +1,6 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lit_eracy/domain/usecases/login_usecase.dart';
+import 'package:lit_eracy/domain/models/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
