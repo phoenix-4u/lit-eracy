@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lit_eracy/data/models/achievement_model.dart';
 import '../models/lesson_model.dart';
 
 class ContentRepository {

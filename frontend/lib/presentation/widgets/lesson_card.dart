@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../data/models/lesson_model.dart';
+import 'package:lit_eracy/domain/models/lesson.dart';
+import 'package:lit_eracy/presentation/pages/lesson_page.dart';
 
 class LessonCard extends StatelessWidget {
-  final LessonModel lesson;
-  const LessonCard({required this.lesson});
+  final Lesson lesson;
+  const LessonCard({super.key, required this.lesson});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListTile(
         title: Text(lesson.title),
         subtitle: Text('Grade ${lesson.grade}'),

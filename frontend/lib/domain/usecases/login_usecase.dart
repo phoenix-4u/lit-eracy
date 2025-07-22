@@ -1,17 +1,20 @@
-import '../../data/repositories/auth_repository.dart';
-import '../entities/user.dart';
+// lib/domain/usecases/login_usecase.dart
 import 'package:dartz/dartz.dart';
+import 'package:lit_eracy/core/errors/failures.dart';
+import 'package:lit_eracy/domain/repositories/auth_repository.dart';
+
 
 class LoginUseCase {
   final AuthRepository _repo;
+
   LoginUseCase(this._repo);
 
-  Future<Either<Failure, User>> execute(String username, String password) async {
+  Future<Either<Failure, String>> execute(String email, String password) async {
     try {
-      final userModel = await _repo.login(username, password);
-      return Right(User(id: userModel.id, username: userModel.username, token: userModel.accessToken));
+      final tokenResp = await _repo.login(email, password);
+      return Right(tokenResp.accessToken);  // Success case
     } catch (e) {
-      return Left(Failure("Login failed"));
+      return Left(Failure("Login failed: ${e.toString()}"));  // Failure case
     }
   }
 }

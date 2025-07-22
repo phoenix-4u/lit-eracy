@@ -1,35 +1,26 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+// lib/presentation/blocs/auth_bloc.dart
+
+import 'package:bloc/bloc.dart';
+import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../../data/repositories/user_repository.dart';
+import 'package:lit_eracy/core/errors/failures.dart';
+import 'package:lit_eracy/domain/usecases/login_usecase.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final AuthRepository _authRepository = AuthRepository();
-  final UserRepository _userRepository = UserRepository();
+  final LoginUseCase loginUseCase;
 
-  AuthBloc() : super(AuthInitial()) {
-    on<LoginRequested>((event, emit) async {
-      emit(AuthLoading());
-      try {
-        final token = await _authRepository.login(event.email, event.password);
-        emit(AuthSuccess(token: token));
-      } catch (e) {
-        emit(AuthFailure(error: e.toString()));
-      }
-    });
+  AuthBloc({required this.loginUseCase}) : super(AuthInitial()) {
+    on<LoginEvent>(_onLoginEvent); // Register event handler
+  }
 
-    on<RegisterRequested>((event, emit) async {
-      emit(AuthLoading());
-      try {
-        await _userRepository.createUser(event.email, event.password);
-        final token = await _authRepository.login(event.email, event.password);
-        emit(AuthSuccess(token: token));
-      } catch (e) {
-        emit(AuthFailure(error: e.toString()));
-      }
-    });
+  Future<void> _onLoginEvent(LoginEvent event, Emitter<AuthState> emit) async {
+    final result = await loginUseCase.execute(event.email, event.password);
+    result.fold(
+      (failure) => emit(AuthFailure(error: failure.message)),
+      (token) => emit(AuthSuccess(token: token)),
+    );
   }
 }

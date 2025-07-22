@@ -1,24 +1,24 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/usecases/fetch_lessons_usecase.dart';
-import '../../../data/models/lesson_model.dart';
+'''import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:lit_eracy/domain/usecases/fetch_lessons_usecase.dart';
+
+import '../../models/lesson_model.dart';
 
 part 'content_event.dart';
 part 'content_state.dart';
 
 class ContentBloc extends Bloc<ContentEvent, ContentState> {
-  final FetchLessonsUseCase _useCase;
+  final FetchLessonsUseCase fetchLessonsUseCase;
 
-  ContentBloc(FetchLessonsUseCase useCase)
-      : _useCase = useCase,
-        super(ContentInitial()) {
+  ContentBloc(this.fetchLessonsUseCase) : super(ContentInitial()) {
     on<LoadLessons>((event, emit) async {
       emit(ContentLoading());
       try {
-        final lessons = await _useCase.execute(event.grade);
+        final lessons = await fetchLessonsUseCase.call(event.grade);
         emit(ContentLoaded(lessons));
       } catch (e) {
         emit(ContentError('Failed to load lessons'));
       }
     });
   }
-}
+}''

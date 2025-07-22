@@ -1,17 +1,30 @@
 part of 'content_bloc.dart';
 
-abstract class ContentState {}
+abstract class ContentState extends Equatable {
+  const ContentState();
+
+  @override
+  List<Object> get props => [];
+}
 
 class ContentInitial extends ContentState {}
 
 class ContentLoading extends ContentState {}
 
 class ContentLoaded extends ContentState {
-  final List<LessonModel> lessons;
-  ContentLoaded(this.lessons);
+  final List<Lesson> lessons;
+
+  const ContentLoaded(this.lessons);
+
+  @override
+  List<Object> get props => [lessons];
 }
 
 class ContentError extends ContentState {
   final String message;
-  ContentError(this.message);
+
+  const ContentError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
