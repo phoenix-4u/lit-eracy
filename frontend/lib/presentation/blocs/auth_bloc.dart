@@ -1,9 +1,8 @@
 // lib/presentation/blocs/auth_bloc.dart
 
 import 'package:bloc/bloc.dart';
-import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:lit_eracy/core/errors/failures.dart';
+
 import 'package:lit_eracy/domain/usecases/login_usecase.dart';
 
 part 'auth_event.dart';
@@ -20,7 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await loginUseCase.execute(event.email, event.password);
     result.fold(
       (failure) => emit(AuthFailure(error: failure.message)),
-      (token) => emit(AuthSuccess(token: token)),
+      (user) => emit(AuthSuccess(token: user.accessToken)),
     );
   }
 }

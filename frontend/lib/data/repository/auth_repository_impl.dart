@@ -10,8 +10,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> login(String username, String password) async {
     try {
-      final response = await _dio.post('/auth/login',
-          data: {'username': username, 'password': password});
+      final response = await _dio
+          .post('/login', data: {'username': username, 'password': password});
       return Right(User.fromJson(response.data));
     } on DioException catch (e) {
       return Left(ServerFailure(e.message ?? 'Login failed'));

@@ -1,0 +1,5 @@
+# Each line corresponds to a token label used by the Gemma model.
+[PAD]
+[CLS]
+[SEP]
+...

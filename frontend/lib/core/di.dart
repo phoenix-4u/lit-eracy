@@ -6,7 +6,7 @@ import 'package:lit_eracy/domain/repository/content_repository.dart';
 import 'package:lit_eracy/domain/usecases/login_usecase.dart';
 import 'package:lit_eracy/domain/usecases/fetch_lessons_usecase.dart';
 import 'package:lit_eracy/domain/usecases/fetch_achievements_usecase.dart';
-import 'package:lit_eracy/presentation/blocs/auth/auth_bloc.dart';
+import 'package:lit_eracy/presentation/blocs/auth_bloc.dart';
 import 'package:lit_eracy/presentation/blocs/content/content_bloc.dart';
 import 'package:lit_eracy/presentation/blocs/achievement/achievement_bloc.dart';
 
@@ -23,7 +23,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FetchAchievementsUseCase(sl()));
 
   // Blocs
-  sl.registerFactory(() => AuthBloc(sl()));
+  sl.registerLazySingleton(() => AuthBloc(loginUseCase: sl()));
   sl.registerFactory(() => ContentBloc(sl()));
   sl.registerFactory(() => AchievementBloc(sl()));
 }

@@ -7,7 +7,7 @@ import 'package:lit_eracy/presentation/widgets/achievement_badge.dart';
 class ParentDashboardPage extends StatelessWidget {
   final int userId;
 
-  const ParentDashboardPage({Key? key, required this.userId}) : super(key: key);
+  const ParentDashboardPage({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {

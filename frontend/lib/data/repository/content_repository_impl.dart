@@ -6,7 +6,7 @@ import 'package:lit_eracy/domain/models/achievement.dart';
 import 'package:lit_eracy/domain/repository/content_repository.dart';
 
 class ContentRepositoryImpl implements ContentRepository {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8000'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8000/api'));
 
   @override
   Future<Either<Failure, List<Lesson>>> fetchLessons(int grade) async {

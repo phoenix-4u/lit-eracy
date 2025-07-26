@@ -4,7 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 class NetworkUtils {
   static Future<bool> isOnline() async {
     final conn = await Connectivity().checkConnectivity();
-    return conn != ConnectivityResult.none;
+    return !conn.contains(ConnectivityResult.none);
   }
 }
 
