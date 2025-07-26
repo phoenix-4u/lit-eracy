@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:lit_eracy/core/di.dart' as di;
 import 'package:lit_eracy/presentation/blocs/auth_bloc.dart';
 import 'package:lit_eracy/presentation/pages/login_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   await di.init();
   runApp(const MyApp());
 }
