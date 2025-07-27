@@ -2,7 +2,8 @@
 
 from sqlalchemy import Column, Integer, Boolean, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
-from ..database import Base
+# from ..database import Base
+from ..base import Base
 
 class UserProgress(Base):
     __tablename__ = "user_progress"

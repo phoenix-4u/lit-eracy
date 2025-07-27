@@ -1,7 +1,10 @@
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
 from .database import Base
+
+# Create a fresh Base instance to avoid cached metadata issues
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"

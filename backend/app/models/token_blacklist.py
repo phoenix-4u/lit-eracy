@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from ..database import Base
+# from ..database import Base
+from ..base import Base
 import datetime
 
 class TokenBlacklist(Base):

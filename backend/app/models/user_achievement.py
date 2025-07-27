@@ -3,7 +3,8 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from ..database import Base
+# from ..database import Base
+from ..base import Base
 
 class UserAchievement(Base):
     __tablename__ = "user_achievements"

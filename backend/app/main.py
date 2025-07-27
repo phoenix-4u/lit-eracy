@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 
-from .database import engine, Base
+from .database import engine
+from .base import Base 
 from .routes import auth, users, content, achievements
 
 

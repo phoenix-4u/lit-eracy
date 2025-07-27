@@ -4,7 +4,8 @@ from sqlalchemy.orm import relationship
 # backend/app/models/content.py
 
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, func
-from ..database import Base
+# from ..database import Base
+from ..base import Base
 
 class Content(Base):
     __tablename__ = "contents"

@@ -4,3 +4,4 @@ __pycache__/
 *.db
 .vscode/
 .venv/
+backend/ai_literacy.db
