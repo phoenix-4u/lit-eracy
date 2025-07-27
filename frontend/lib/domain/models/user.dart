@@ -1,19 +1,20 @@
 class User {
-  final int id;
-  final String username;
   final String accessToken;
+  final String tokenType;
 
-  User({
-    required this.id,
-    required this.username,
-    required this.accessToken,
-  });
+  User({required this.accessToken, required this.tokenType});
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as int,
-      username: json['username'] as String,
-      accessToken: json['access_token'] as String,
+      accessToken: json['access_token'],
+      tokenType: json['token_type'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'access_token': accessToken,
+      'token_type': tokenType,
+    };
   }
 }

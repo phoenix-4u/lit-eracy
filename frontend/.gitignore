@@ -1,12 +1,35 @@
-# Flutter/Dart
+# Flutter/Dart/Pub related
 .dart_tool/
-.build/
 .packages
+.pub-cache/
 .pub/
-.idea/
-.vscode/
+build/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+android/.gradle/
+android/captures/
+android/gradle/
+android/key.properties
+android/local.properties
 *.iml
-# Generated files
-**/generated_plugin_registrant.dart
-# Assets
-assets/models/*.tflite
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+
+# Environment & secrets
+.env
+*.env
+*.env.*
+
+# Output & logs
+*.log
+
+# Node modules (if using web or JS tooling)
+node_modules/

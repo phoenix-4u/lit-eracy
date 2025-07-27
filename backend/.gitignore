@@ -1,7 +1,16 @@
 __pycache__/
 *.pyc
 .env
+*.env.*
 *.db
+*.sqlite3
 .vscode/
 .venv/
+ai_literacy.db
 backend/ai_literacy.db
+frontend/ai_literacy.db
+.DS_Store
+node_modules/
+dist/
+build/
+*.log
