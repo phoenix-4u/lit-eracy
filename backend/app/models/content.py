@@ -1,3 +1,6 @@
+from sqlalchemy.orm import relationship
+    # Relationships
+   
 # backend/app/models/content.py
 
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, func
@@ -15,3 +18,4 @@ class Content(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    content_progress = relationship("UserProgress", back_populates="content")

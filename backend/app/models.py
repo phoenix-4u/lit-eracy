@@ -1,8 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey, Text
-from sqlalchemy.relationship import relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
-
 
 class User(Base):
     __tablename__ = "users"
@@ -11,16 +10,15 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    full_name = Column(String)
+    full_name = Column(String) 
     age = Column(Integer)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    progress = relationship("UserProgress", back_populates="user")
+    user_progress = relationship("UserProgress", back_populates="user")
     achievements = relationship("UserAchievement", back_populates="user")
-
 
 class Content(Base):
     __tablename__ = "contents"
@@ -37,8 +35,7 @@ class Content(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    progress = relationship("UserProgress", back_populates="content")
-
+    content_progress = relationship("UserProgress", back_populates="content")
 
 class UserProgress(Base):
     __tablename__ = "user_progress"
@@ -54,9 +51,8 @@ class UserProgress(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    user = relationship("User", back_populates="progress")
-    content = relationship("Content", back_populates="progress")
-
+    user = relationship("User", back_populates="user_progress")
+    content = relationship("Content", back_populates="content_progress")
 
 class Achievement(Base):
     __tablename__ = "achievements"
@@ -72,7 +68,6 @@ class Achievement(Base):
 
     # Relationships
     user_achievements = relationship("UserAchievement", back_populates="achievement")
-
 
 class UserAchievement(Base):
     __tablename__ = "user_achievements"

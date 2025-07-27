@@ -16,5 +16,5 @@ class UserProgress(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    user = relationship("User", back_populates="progress")
-    content = relationship("Content", back_populates="progress")
+    user = relationship("User", back_populates="user_progress")
+    content = relationship("Content", back_populates="content_progress")

@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
 .env
-app.db
+*.db
 .vscode/
 .venv/

@@ -10,5 +10,6 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
-    progress = relationship("UserProgress", back_populates="user")
+    user_progress = relationship("UserProgress", back_populates="user")
     achievements = relationship("UserAchievement", back_populates="user")
+    username = Column(String, unique=True, index=True) 
