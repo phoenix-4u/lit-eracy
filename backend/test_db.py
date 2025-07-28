@@ -71,10 +71,10 @@ def test_database():
 if __name__ == "__main__":
     if test_database():
         # 1. Inspect the columns of the 'users' table
-        inspect_table_columns('users')
+        inspect_table_columns('contents')
 
         # 2. Run a query to see the actual data in the table
-        run_sql_query("SELECT * FROM users LIMIT 5")
+        run_sql_query("SELECT * FROM contents LIMIT 5")
 
 
 # from app.database import get_db, engine

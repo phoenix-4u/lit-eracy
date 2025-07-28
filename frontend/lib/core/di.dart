@@ -9,10 +9,17 @@ import 'package:lit_eracy/domain/usecases/fetch_achievements_usecase.dart';
 import 'package:lit_eracy/presentation/blocs/auth_bloc.dart';
 import 'package:lit_eracy/presentation/blocs/content/content_bloc.dart';
 import 'package:lit_eracy/presentation/blocs/achievement/achievement_bloc.dart';
+import 'package:lit_eracy/core/services/token_storage.dart';
+import 'package:lit_eracy/core/http_client.dart';
+import 'package:dio/dio.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  // Core services
+  sl.registerLazySingleton<TokenStorage>(() => TokenStorageImpl());
+  sl.registerLazySingleton<Dio>(() => HttpClient.instance);
+
   // Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl());
   sl.registerLazySingleton<ContentRepository>(() => ContentRepositoryImpl());

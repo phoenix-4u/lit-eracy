@@ -1,31 +1,63 @@
 class Lesson {
   final int id;
-  final int grade;
   final String title;
-  final String content;
+  final String? description;
+  final String contentType;
+  final int? difficultyLevel;
+  final String? ageGroup;
+  final String? contentData;
+  final bool isActive;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Lesson({
     required this.id,
-    required this.grade,
     required this.title,
-    required this.content,
+    this.description,
+    required this.contentType,
+    this.difficultyLevel,
+    this.ageGroup,
+    this.contentData,
+    required this.isActive,
+    this.createdAt,
+    this.updatedAt,
   });
+
+  // ✅ Add missing getters that your UI expects
+  String? get content => contentData; // Map contentData to content
+  int? get grade => difficultyLevel; // Map difficultyLevel to grade
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
       id: json['id'] as int,
-      grade: json['grade'] as int,
       title: json['title'] as String,
-      content: json['content'] as String,
+      description: json['description'] as String?,
+      contentType: json['content_type'] as String,
+      difficultyLevel: json['difficulty_level'] as int?,
+      ageGroup: json['age_group'] as String?,
+      contentData: json['content_data'] as String?,
+      isActive: json['is_active'] as bool? ?? true,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'grade': grade,
       'title': title,
-      'content': content,
+      'description': description,
+      'content_type': contentType,
+      'difficulty_level': difficultyLevel,
+      'age_group': ageGroup,
+      'content_data': contentData,
+      'is_active': isActive,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
     };
   }
 }

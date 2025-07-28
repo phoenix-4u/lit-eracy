@@ -1,30 +1,39 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lit_eracy/core/errors/failures.dart';
-import 'package:lit_eracy/core/config.dart'; // Add this import
+import 'package:lit_eracy/config/api_config.dart';
 import 'package:lit_eracy/domain/models/user.dart';
 import 'package:lit_eracy/domain/repository/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final Dio _dio = Dio(BaseOptions(baseUrl: AppConfig.baseUrl)); // ✅ Use config
+  final Dio _dio = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
 
   @override
   Future<Either<Failure, User>> login(String username, String password) async {
     try {
-      // ✅ Use form data format for OAuth2PasswordRequestForm
+      // Use form data format for OAuth2PasswordRequestForm
       final formData = FormData.fromMap({
         'username': username,
         'password': password,
       });
 
       final response = await _dio.post(
-        '/api/auth/login', // ✅ Correct endpoint path
+        '/api/auth/login', // Correct endpoint path
         data: formData,
       );
 
-      // ✅ The response contains access_token, not user data directly
-      // You might need to get user data separately or update your User model
-      return Right(User.fromJson(response.data));
+      // Extract and store the token
+      final accessToken = response.data['access_token'];
+      final tokenType = response.data['token_type'];
+
+      // Store token for future requests
+      await _storeToken(accessToken);
+
+      return Right(User(
+        accessToken: accessToken,
+        tokenType: tokenType,
+      ));
     } on DioException catch (e) {
       return Left(ServerFailure(e.message ?? 'Login failed'));
     } catch (e) {
@@ -37,11 +46,12 @@ class AuthRepositoryImpl implements AuthRepository {
       String username, String password) async {
     try {
       await _dio.post(
-        '/api/auth/register', // ✅ Correct endpoint path
+        '/api/auth/register', // Correct endpoint path
         data: {
+          'email': username, // Using username as email
           'username': username,
           'password': password,
-          'email': username, // ✅ Your backend expects email field
+          'full_name': null, // Optional field
         },
       );
       return const Right(null);
@@ -50,5 +60,23 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return Left(ServerFailure('Unexpected error: $e'));
     }
+  }
+
+  // Helper method to store token
+  Future<void> _storeToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('access_token', token);
+  }
+
+  // Helper method to retrieve stored token
+  Future<String?> getStoredToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('access_token');
+  }
+
+  // Helper method to clear token (for logout)
+  Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
   }
 }

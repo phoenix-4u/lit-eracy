@@ -11,7 +11,7 @@ class LessonPage extends StatelessWidget {
       appBar: AppBar(title: Text(lesson.title)),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Text(lesson.content),
+        child: Text(lesson.contentData ?? ''),
       ),
     );
   }

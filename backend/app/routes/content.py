@@ -1,13 +1,44 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from .. import crud, schemas
+from .. import crud, schemas, models  
 from ..database import get_db
 from ..services.auth import get_current_active_user
 
 
 router = APIRouter()
+
+# ✅ Specific endpoints MUST come before generic path parameters
+@router.get("/lessons", response_model=List[schemas.ContentResponse])
+async def get_lessons(
+    grade: int = Query(..., description="Grade level (1-12)"),
+    db: Session = Depends(get_db),
+    current_user: schemas.UserResponse = Depends(get_current_active_user)
+):
+    """Get lessons filtered by grade level"""
+    try:
+        # Query lessons by grade
+        lessons = db.query(models.Content).filter(
+            models.Content.content_type == "lesson",
+            models.Content.difficulty_level == grade,
+            models.Content.is_active == True
+        ).all()
+        
+        # ✅ Handle empty results without raising exception
+        if not lessons:
+            # Return empty list instead of raising exception
+            return []
+            
+        return lessons
+        
+    except Exception as e:
+        # ✅ Only catch actual database/system errors
+        print(f"Database error in get_lessons: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail="Internal server error while fetching lessons"
+        )
 
 
 @router.get("/", response_model=List[schemas.ContentResponse])
