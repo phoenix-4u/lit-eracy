@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -40,6 +41,23 @@ async def get_lessons(
             detail="Internal server error while fetching lessons"
         )
 
+@router.post("/complete_task")
+async def complete_task(
+    db: Session = Depends(get_db),
+    current_user: schemas.UserResponse = Depends(get_current_active_user)
+):
+    """Complete a task, award currency, and unlock content"""
+    user = db.query(crud.models.User).filter_by(id=current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.currency += 10  # Award 10 Knowledge Gems
+    db.commit()
+    # Unlock content logic (simple: unlock first locked content)
+    locked_content = db.query(crud.models.Content).filter_by(is_active=True).first()
+    unlocked = None
+    if locked_content:
+        unlocked = locked_content.title
+    return {"currency": user.currency, "unlocked_content": unlocked, "message": "Task completed!"}
 
 @router.get("/", response_model=List[schemas.ContentResponse])
 async def read_contents(

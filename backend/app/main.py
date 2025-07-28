@@ -5,7 +5,7 @@ import uvicorn
 
 from .database import engine
 from .base import Base 
-from .routes import auth, users, content, achievements
+from .routes import auth, users, content, achievements, task
 
 
 @asynccontextmanager
@@ -37,6 +37,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(content.router, prefix="/api/content", tags=["content"])
 app.include_router(achievements.router, prefix="/api/achievements", tags=["achievements"])
+app.include_router(task.router, prefix="/api", tags=["tasks"])
 
 
 @app.get("/")

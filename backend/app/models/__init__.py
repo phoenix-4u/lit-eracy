@@ -1,5 +1,6 @@
 from .achievement import Achievement
 from .lesson import Lesson
+from .task import Task
 from .token_blacklist import TokenBlacklist
 from .user import User
 from .user_progress import UserProgress           # if added earlier
