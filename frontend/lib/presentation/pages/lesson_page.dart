@@ -44,6 +44,7 @@ class _LessonPageState extends State<LessonPage> {
       // Add auth headers if needed
     );
     if (response.statusCode == 200) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Task completed!')),
       );

@@ -4,6 +4,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:lit_eracy/core/di.dart' as di;
 import 'package:lit_eracy/presentation/blocs/auth_bloc.dart';
 import 'package:lit_eracy/presentation/pages/login_page.dart';
+import 'package:lit_eracy/core/theme/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +22,7 @@ class MyApp extends StatelessWidget {
       create: (_) => di.sl<AuthBloc>(),
       child: MaterialApp(
         title: 'AI Literacy App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: appTheme,
         home: const LoginPage(),
       ),
     );
