@@ -1,12 +1,11 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class TokenBlacklistBase(BaseModel):
-    jti: str
-
-class TokenBlacklistOut(TokenBlacklistBase):
+class UserAchievementResponse(BaseModel):
     id: int
-    created_at: datetime
+    user_id: int
+    achievement_id: int
+    earned_at: datetime
 
     class Config:
         from_attributes = True

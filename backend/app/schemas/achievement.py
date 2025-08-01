@@ -1,13 +1,17 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+class AchievementCreate(BaseModel):
+    name: str
+from datetime import datetime
+
 class AchievementBase(BaseModel):
     name: str
 
-class AchievementOut(AchievementBase):
+class AchievementResponse(AchievementBase):
     id: int
     user_id: int
     earned_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

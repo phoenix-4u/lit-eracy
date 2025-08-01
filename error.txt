@@ -1,3 +1,4 @@
+INFO:     127.0.0.1:50306 - "POST /api/auth/login HTTP/1.1" 500 Internal Server Error
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
   File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 401, in run_asgi
@@ -18,7 +19,9 @@ Traceback (most recent call last):
     raise exc
   File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
     await self.app(scope, receive, _send)
-  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__  
+  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__  
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
     await self.app(scope, receive, send)
   File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
@@ -50,26 +53,22 @@ Traceback (most recent call last):
   File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\fastapi\routing.py", line 212, in run_endpoint_function
     return await dependant.call(**values)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\app\routes\auth.py", line 31, in register
-    return crud.create_user(db=db, user=user)
-           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
-  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\app\crud.py", line 32, in create_user
-    db_user = models.User(
-        email=user.email,
-    ...<3 lines>...
-        hashed_password=hashed_password
+  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\app\routes\auth.py", line 39, in login
+    user = authenticate_user_service(db, form_data.username, form_data.password)
+  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\app\services\auth.py", line 61, in authenticate_user_service
+    return UserResponse.from_orm(user)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\pydantic\main.py", line 1236, in from_orm
+    return cls.model_validate(obj)
+           ~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\pydantic\main.py", line 567, in model_validate       
+    return cls.__pydantic_validator__.validate_python(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        obj, strict=strict, from_attributes=from_attributes, context=context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
-  File "<string>", line 4, in __init__
-  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 571, in _initialize_instance
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 569, in _initialize_instance
-    manager.original_init(*mixed[1:], **kwargs)
-    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\dipan\Documents\Code\lit-eracy\backend\.venv\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2177, in _declarative_constructor
-    raise TypeError(
-        "%r is an invalid keyword argument for %s" % (k, cls_.__name__)
-    )
-TypeError: 'full_name' is an invalid keyword argument for User
+    ^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for UserResponse
+age
+  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.8/v/int_type

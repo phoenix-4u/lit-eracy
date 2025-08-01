@@ -4,7 +4,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from datetime import timedelta
 from typing import Optional
 
-from .. import crud, schemas
+from .. import crud
+from ..schemas.user import UserResponse
 from ..database import get_db
 from ..utils.auth import decode_access_token, create_access_token
 
@@ -16,7 +17,7 @@ security = HTTPBearer()
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
-) -> schemas.UserResponse:
+) -> UserResponse:
     """Get current authenticated user"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,23 +42,23 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     
-    return schemas.UserResponse.model_validate(user)
+    return UserResponse.from_orm(user)
 
 
 async def get_current_active_user(
-    current_user: schemas.UserResponse = Depends(get_current_user)
-) -> schemas.UserResponse:
+    current_user: UserResponse = Depends(get_current_user)
+) -> UserResponse:
     """Get current active user"""
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
-def authenticate_user_service(db: Session, email: str, password: str) -> Optional[schemas.UserResponse]:
+def authenticate_user_service(db: Session, email: str, password: str) -> Optional[UserResponse]:
     """Authenticate user service"""
     user = crud.authenticate_user(db, email, password)
     if user:
-        return schemas.UserResponse.model_validate(user)
+        return UserResponse.from_orm(user)
     return None
 
 

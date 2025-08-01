@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from ..schemas.user import UserOut, UserCreate
 from ..schemas.lesson import LessonOut
-from ..schemas.achievement import AchievementOut
+from ..schemas.achievement import AchievementResponse
 
 router = APIRouter()
 

@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import Optional, List
-from . import models, schemas
+from . import models
+from .schemas.user import UserCreate, UserUpdate
+from .schemas.content import ContentCreate, ContentUpdate
+from .schemas.lesson import LessonOut
+from .schemas.achievement import AchievementCreate
+from .schemas.user_progress import UserProgressCreate
 from .utils.auth import get_password_hash, verify_password
 
 
@@ -26,7 +31,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[models.User]
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, user: schemas.UserCreate) -> models.User:
+def create_user(db: Session, user: UserCreate) -> models.User:
     """Create new user"""
     hashed_password = get_password_hash(user.password)
     db_user = models.User(
@@ -42,7 +47,7 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     return db_user
 
 
-def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate) -> Optional[models.User]:
+def update_user(db: Session, user_id: int, user_update: UserUpdate) -> Optional[models.User]:
     """Update user"""
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if db_user:
@@ -93,7 +98,7 @@ def get_contents(db: Session, skip: int = 0, limit: int = 100, content_type: Opt
     return query.offset(skip).limit(limit).all()
 
 
-def create_content(db: Session, content: schemas.ContentCreate) -> models.Content:
+def create_content(db: Session, content: ContentCreate) -> models.Content:
     """Create new content"""
     db_content = models.Content(**content.model_dump())
     db.add(db_content)
@@ -102,7 +107,7 @@ def create_content(db: Session, content: schemas.ContentCreate) -> models.Conten
     return db_content
 
 
-def update_content(db: Session, content_id: int, content_update: schemas.ContentUpdate) -> Optional[models.Content]:
+def update_content(db: Session, content_id: int, content_update: ContentUpdate) -> Optional[models.Content]:
     """Update content"""
     db_content = db.query(models.Content).filter(models.Content.id == content_id).first()
     if db_content:
@@ -138,7 +143,7 @@ def get_user_all_progress(db: Session, user_id: int) -> List[models.UserProgress
     return db.query(models.UserProgress).filter(models.UserProgress.user_id == user_id).all()
 
 
-def create_or_update_progress(db: Session, progress: schemas.UserProgressCreate) -> models.UserProgress:
+def create_or_update_progress(db: Session, progress: UserProgressCreate) -> models.UserProgress:
     """Create or update user progress"""
     db_progress = get_user_progress(db, progress.user_id, progress.content_id)
     
@@ -168,7 +173,7 @@ def get_achievements(db: Session, skip: int = 0, limit: int = 100) -> List[model
     return db.query(models.Achievement).filter(models.Achievement.is_active == True).offset(skip).limit(limit).all()
 
 
-def create_achievement(db: Session, achievement: schemas.AchievementCreate) -> models.Achievement:
+def create_achievement(db: Session, achievement: AchievementCreate) -> models.Achievement:
     """Create new achievement"""
     db_achievement = models.Achievement(**achievement.model_dump())
     db.add(db_achievement)

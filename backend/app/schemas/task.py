@@ -12,4 +12,4 @@ class TaskOut(TaskBase):
     id: int
     is_completed: int
     class Config:
-        orm_mode = True
+        from_attributes = True
