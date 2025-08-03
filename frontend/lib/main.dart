@@ -1,4 +1,4 @@
-// File: frontend/lib/main.dart
+// # File: frontend/lib/main.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,18 +50,21 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: AppTheme.primaryColor,
+            // FIX: Use the static const field 'primaryBlue' directly instead of the getter.
+            seedColor: AppTheme.primaryBlue,
             brightness: Brightness.light,
           ),
           textTheme: GoogleFonts.poppinsTextTheme(),
           appBarTheme: const AppBarTheme(
-            backgroundColor: AppTheme.primaryColor,
+            // FIX: Use the static const field 'primaryBlue' directly instead of the getter.
+            backgroundColor: AppTheme.primaryBlue,
             foregroundColor: Colors.white,
             elevation: 0,
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              // FIX: Use the static const field 'primaryBlue' directly instead of the getter.
+              backgroundColor: AppTheme.primaryBlue,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

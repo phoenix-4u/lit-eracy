@@ -89,7 +89,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withAlpha((255 * 0.3).round()),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -135,7 +135,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                 child: Text(
                   'Learning Made Fun with AI',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withAlpha((255 * 0.9).round()),
                         fontWeight: FontWeight.w500,
                       ),
                   textAlign: TextAlign.center,

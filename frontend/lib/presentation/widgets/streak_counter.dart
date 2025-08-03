@@ -86,7 +86,7 @@ class _StreakCounterState extends State<StreakCounter>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF6B35).withOpacity(0.3),
+              color: const Color(0xFFFF6B35).withAlpha((255 * 0.3).round()),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -151,7 +151,7 @@ class _StreakCounterState extends State<StreakCounter>
                   Text(
                     'Longest: ${widget.longestStreak} days',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withAlpha((255 * 0.9).round()),
                         ),
                   ),
                   const SizedBox(height: 8),
@@ -159,7 +159,7 @@ class _StreakCounterState extends State<StreakCounter>
                   Container(
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withAlpha((255 * 0.3).round()),
                       borderRadius: BorderRadius.circular(2),
                     ),
                     child: FractionallySizedBox(
@@ -190,7 +190,7 @@ class _StreakCounterState extends State<StreakCounter>
                             (_fireAnimation.value - 0.8) * (index + 1) * 0.1,
                         child: Icon(
                           FontAwesomeIcons.fire,
-                          color: Colors.white.withOpacity(0.7 - index * 0.2),
+                          color: Colors.white.withAlpha((255 * (0.7 - index * 0.2)).round()),
                           size: 16 - index * 2,
                         ),
                       );

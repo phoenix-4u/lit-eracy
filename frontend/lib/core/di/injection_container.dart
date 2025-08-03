@@ -113,7 +113,7 @@ Future<void> init() async {
         loginUseCase: sl(),
         registerUseCase: sl(),
       ));
-  sl.registerFactory(() => UserBloc(sl()));
+  sl.registerFactory(() => UserBloc());
   sl.registerFactory(() => ContentBloc(getLessonsUseCase: sl()));
   sl.registerFactory(() => ProgressBloc(sl()));
   sl.registerFactory(() => AchievementsBloc(getAchievementsUseCase: sl()));

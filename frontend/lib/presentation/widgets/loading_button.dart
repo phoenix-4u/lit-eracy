@@ -38,7 +38,7 @@ class LoadingButton extends StatelessWidget {
           foregroundColor: textColor ?? Colors.white,
           elevation: 2,
           shadowColor:
-              (backgroundColor ?? AppTheme.primaryBlue).withOpacity(0.3),
+              (backgroundColor ?? AppTheme.primaryBlue).withAlpha((255 * 0.3).round()),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

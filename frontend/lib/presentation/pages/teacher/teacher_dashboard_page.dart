@@ -61,9 +61,10 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                     children: [
                       CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        backgroundColor:
+                            Colors.white.withAlpha((255 * 0.2).round()),
                         child: const Icon(
-                          FontAwesomeIcons.chalkboardTeacher,
+                          FontAwesomeIcons.chalkboardUser,
                           color: Colors.white,
                           size: 30,
                         ),
@@ -90,7 +91,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                                   .textTheme
                                   .bodyLarge
                                   ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.9),
+                                    color: Colors.white
+                                        .withAlpha((255 * 0.9).round()),
                                   ),
                             ),
                           ],
@@ -140,7 +142,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 Expanded(
                   child: _buildActionCard(
                     'Assign Quiz',
-                    FontAwesomeIcons.questionCircle,
+                    FontAwesomeIcons.circleQuestion,
                     AppTheme.primaryOrange,
                     () {
                       // Assign quiz
@@ -256,7 +258,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withAlpha((255 * 0.1).round()),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -313,7 +315,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withAlpha((255 * 0.1).round()),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -373,7 +375,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withAlpha((255 * 0.9).round()),
                 fontSize: 12,
               ),
             ),
@@ -394,7 +396,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha((255 * 0.1).round()),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -432,7 +434,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -492,7 +494,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: color.withOpacity(0.2),
+            backgroundColor: color.withAlpha((255 * 0.2).round()),
             child: Text(
               name.split(' ').map((n) => n[0]).join(''),
               style: TextStyle(
@@ -539,7 +541,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: color.withOpacity(0.2),
+            backgroundColor: color.withAlpha((255 * 0.2).round()),
             child: Text(
               name.split(' ').map((n) => n[0]).join(''),
               style: TextStyle(

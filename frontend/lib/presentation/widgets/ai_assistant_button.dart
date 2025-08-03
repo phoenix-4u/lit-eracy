@@ -88,7 +88,7 @@ class _AIAssistantButtonState extends State<AIAssistantButton>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF667eea).withOpacity(0.4),
+                    color: const Color(0xFF667eea).withAlpha((255 * 0.4).round()),
                     blurRadius: 15,
                     spreadRadius: 2,
                     offset: const Offset(0, 4),
@@ -107,7 +107,7 @@ class _AIAssistantButtonState extends State<AIAssistantButton>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withAlpha((255 * 0.3).round()),
                           width: 2,
                         ),
                       ),

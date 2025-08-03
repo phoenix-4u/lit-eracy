@@ -76,7 +76,7 @@ class _AIChatPageState extends State<AIChatPage> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withAlpha((255 * 0.1).round()),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -133,7 +133,7 @@ class _AIChatPageState extends State<AIChatPage> {
         children: [
           if (!message.isUser) ...[
             CircleAvatar(
-              backgroundColor: AppTheme.imaginationSparks.withOpacity(0.2),
+              backgroundColor: AppTheme.imaginationSparks.withAlpha((255 * 0.2).round()),
               child: const Icon(
                 FontAwesomeIcons.robot,
                 color: AppTheme.imaginationSparks,
@@ -157,7 +157,7 @@ class _AIChatPageState extends State<AIChatPage> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withAlpha((255 * 0.1).round()),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -180,7 +180,7 @@ class _AIChatPageState extends State<AIChatPage> {
                     _formatTime(message.timestamp),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: message.isUser
-                              ? Colors.white.withOpacity(0.7)
+                              ? Colors.white.withAlpha((255 * 0.7).round())
                               : AppTheme.secondaryText,
                         ),
                   ),
@@ -191,7 +191,7 @@ class _AIChatPageState extends State<AIChatPage> {
           if (message.isUser) ...[
             const SizedBox(width: 8),
             CircleAvatar(
-              backgroundColor: AppTheme.primaryBlue.withOpacity(0.2),
+              backgroundColor: AppTheme.primaryBlue.withAlpha((255 * 0.2).round()),
               child: const Icon(
                 FontAwesomeIcons.user,
                 color: AppTheme.primaryBlue,

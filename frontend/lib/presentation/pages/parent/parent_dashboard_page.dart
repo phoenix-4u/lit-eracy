@@ -18,7 +18,7 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AchievementsBloc>().add(const LoadAchievements(1));
+    context.read<AchievementsBloc>().add(LoadAchievements());
   }
 
   @override
@@ -63,7 +63,8 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
                     children: [
                       CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundColor:
+                            Colors.white.withAlpha((255 * 0.2).round()),
                         child: const Icon(
                           FontAwesomeIcons.child,
                           color: Colors.white,
@@ -92,7 +93,8 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
                                   .textTheme
                                   .bodyLarge
                                   ?.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white
+                                        .withAlpha((255 * 0.9).round()),
                                   ),
                             ),
                           ],
@@ -333,7 +335,7 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withAlpha((255 * 0.9).round()),
                 fontSize: 12,
               ),
             ),
@@ -358,10 +360,10 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
         ],
       ),
       child: Column(
@@ -418,7 +420,7 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withAlpha((255 * 0.1).round()),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -456,7 +458,7 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha((255 * 0.05).round()),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -510,7 +512,7 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha((255 * 0.1).round()),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

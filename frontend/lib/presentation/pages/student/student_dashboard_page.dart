@@ -191,7 +191,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                     Text(
                       'Welcome back,',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withAlpha((255 * 0.9).round()),
                           ),
                     ),
                     Text(
@@ -209,7 +209,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withAlpha((255 * 0.2).round()),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -348,8 +348,8 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                         ),
                       );
                     } else {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                      return const Padding(
+                        padding: EdgeInsets.only(right: 12),
                         child: AchievementBadge(
                           achievement: Achievement(
                             id: -1,

@@ -3,7 +3,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../../domain/entities/user.dart';
 import '../../../domain/entities/user_points.dart';
 
@@ -11,9 +10,7 @@ part 'user_event.dart';
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
-  final GetUserProfileUseCase _getUserProfileUseCase;
-
-  UserBloc(this._getUserProfileUseCase) : super(UserInitial()) {
+  UserBloc() : super(UserInitial()) {
     on<LoadUserDashboard>(_onLoadUserDashboard);
     on<UpdateUserPoints>(_onUpdateUserPoints);
   }

@@ -148,7 +148,6 @@ class UserPoints extends Equatable {
   }
 
   int get pointsToNextLevel {
-    final currentLevelPoints = (level - 1) * 100;
     final nextLevelPoints = level * 100;
     return nextLevelPoints - totalPoints;
   }

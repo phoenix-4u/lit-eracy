@@ -62,7 +62,7 @@ class _LessonPageState extends State<LessonPage> {
                   Text(
                     'Learn basic counting and number recognition',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withAlpha((255 * 0.9).round()),
                         ),
                   ),
                 ],
@@ -134,7 +134,7 @@ class _LessonPageState extends State<LessonPage> {
               context,
               'Practice Quiz',
               'Test your knowledge with fun questions',
-              FontAwesomeIcons.questionCircle,
+              FontAwesomeIcons.circleQuestion,
               AppTheme.primaryPurple,
               () => _showInteractiveDialog(context, 'Quiz Time!'),
             ),
@@ -186,7 +186,7 @@ class _LessonPageState extends State<LessonPage> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha((255 * 0.1).round()),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -198,7 +198,7 @@ class _LessonPageState extends State<LessonPage> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withAlpha((255 * 0.1).round()),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

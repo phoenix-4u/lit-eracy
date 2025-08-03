@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../domain/entities/achievement.dart';
 import '../../blocs/achievements/achievements_bloc.dart';
 import '../../widgets/achievement_badge.dart';
 
@@ -19,7 +20,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AchievementsBloc>().add(const LoadAchievements(1));
+    // FIX: Removed 'const' because LoadAchievements does not have a const constructor.
+    context.read<AchievementsBloc>().add(LoadAchievements());
   }
 
   @override
@@ -68,7 +70,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                   Text(
                     'Celebrate your learning journey!',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withAlpha((255 * 0.9).round()),
                         ),
                   ),
                 ],
@@ -95,7 +97,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     context,
                     'Available',
                     '15',
-                    FontAwesomeIcons.target,
+                    FontAwesomeIcons.bullseye,
                     AppTheme.primaryBlue,
                   ),
                 ),
@@ -115,7 +117,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
             const SizedBox(height: 24),
 
             Text(
-              'Recent Achievements',
+              'Your Collection',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -131,6 +133,50 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     child: CircularProgressIndicator(),
                   );
                 } else if (state is AchievementsLoaded) {
+                  final lockedAchievements = [
+                    const Achievement(
+                        id: -1,
+                        title: 'Story Master',
+                        description: 'Read 10 AI-generated stories',
+                        iconName: 'book',
+                        rarity: 'Silver',
+                        pointsRequired: 50,
+                        category: 'Reading',
+                        isUnlocked: false),
+                    const Achievement(
+                        id: -2,
+                        title: 'Math Wizard',
+                        description: 'Complete 20 math lessons',
+                        iconName: 'graduation',
+                        rarity: 'Gold',
+                        pointsRequired: 100,
+                        category: 'Math',
+                        isUnlocked: false),
+                    const Achievement(
+                        id: -3,
+                        title: 'Perfect Streak',
+                        description: 'Learn for 30 days straight',
+                        iconName: 'fire',
+                        rarity: 'Platinum',
+                        pointsRequired: 200,
+                        category: 'General',
+                        isUnlocked: false),
+                    const Achievement(
+                        id: -4,
+                        title: 'Explorer',
+                        description: 'Try all subject areas',
+                        iconName: 'target',
+                        rarity: 'Bronze',
+                        pointsRequired: 20,
+                        category: 'General',
+                        isUnlocked: false),
+                  ];
+
+                  final allAchievements = [
+                    ...state.achievements,
+                    ...lockedAchievements
+                  ];
+
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -141,56 +187,10 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       mainAxisSpacing: 12,
                       childAspectRatio: 0.85,
                     ),
-                    itemCount: state.achievements.length +
-                        4, // Add some locked achievements
+                    itemCount: allAchievements.length,
                     itemBuilder: (context, index) {
-                      if (index < state.achievements.length) {
-                        final achievement = state.achievements[index];
-                        return AchievementBadge(
-                          title: achievement['name'] ?? 'Achievement',
-                          description:
-                              achievement['description'] ?? 'Well done!',
-                          icon: achievement['badge_icon'] ?? '🏆',
-                          isUnlocked: true,
-                          earnedDate: achievement['earned_at'],
-                        );
-                      } else {
-                        // Show locked achievements
-                        final lockedAchievements = [
-                          {
-                            'title': 'Story Master',
-                            'description': 'Read 10 AI-generated stories',
-                            'icon': '📚',
-                          },
-                          {
-                            'title': 'Math Wizard',
-                            'description': 'Complete 20 math lessons',
-                            'icon': '🧙‍♂️',
-                          },
-                          {
-                            'title': 'Perfect Streak',
-                            'description': 'Learn for 30 days straight',
-                            'icon': '🔥',
-                          },
-                          {
-                            'title': 'Explorer',
-                            'description': 'Try all subject areas',
-                            'icon': '🗺️',
-                          },
-                        ];
-
-                        final lockedIndex = index - state.achievements.length;
-                        if (lockedIndex < lockedAchievements.length) {
-                          final locked = lockedAchievements[lockedIndex];
-                          return AchievementBadge(
-                            title: locked['title']!,
-                            description: locked['description']!,
-                            icon: locked['icon']!,
-                            isUnlocked: false,
-                          );
-                        }
-                      }
-                      return const SizedBox();
+                      final achievement = allAchievements[index];
+                      return AchievementBadge(achievement: achievement);
                     },
                   );
                 } else if (state is AchievementsError) {
@@ -198,7 +198,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     child: Column(
                       children: [
                         const Icon(
-                          FontAwesomeIcons.exclamationTriangle,
+                          FontAwesomeIcons.triangleExclamation,
                           size: 60,
                           color: AppTheme.primaryOrange,
                         ),
@@ -219,9 +219,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
-                            context
-                                .read<AchievementsBloc>()
-                                .add(const LoadAchievements(1));
+                            context.read<AchievementsBloc>().add(
+                                LoadAchievements()); // Also removed const here
                           },
                           child: const Text('Try Again'),
                         ),
@@ -252,7 +251,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

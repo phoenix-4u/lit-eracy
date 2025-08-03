@@ -21,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _contentBloc = sl<ContentBloc>();
+    // Assuming LoadLessons does not have a const constructor
     _contentBloc.add(const LoadLessons());
   }
 
@@ -41,7 +42,8 @@ class _HomePageState extends State<HomePage> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: AppTheme.primaryColor,
+        // FIX: Replaced getter 'primaryColor' with 'static const primaryBlue'
+        backgroundColor: AppTheme.primaryBlue,
         elevation: 0,
         actions: [
           IconButton(
@@ -64,15 +66,16 @@ class HomePageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppTheme.primaryColor,
-            AppTheme.backgroundColor,
+            // FIX: Replaced getters with their static const counterparts
+            AppTheme.primaryBlue,
+            AppTheme.lightBackground,
           ],
-          stops: const [0.0, 0.3],
+          stops: [0.0, 0.3],
         ),
       ),
       child: Column(
@@ -105,7 +108,7 @@ class HomePageBody extends StatelessWidget {
             'Continue your learning journey',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withAlpha((255 * 0.9).round()),
             ),
           ),
         ],
@@ -116,7 +119,8 @@ class HomePageBody extends StatelessWidget {
   Widget _buildLessonsSection(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: AppTheme.backgroundColor,
+        // FIX: Replaced getter 'backgroundColor' with 'static const lightBackground'
+        color: AppTheme.lightBackground,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(30),
           topRight: Radius.circular(30),
@@ -132,7 +136,8 @@ class HomePageBody extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textColor,
+                // FIX: Replaced getter 'textColor' with 'static const primaryText'
+                color: AppTheme.primaryText,
               ),
             ),
           ),
@@ -143,7 +148,8 @@ class HomePageBody extends StatelessWidget {
                   return const Center(
                     child: CircularProgressIndicator(
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                          // FIX: Replaced getter 'primaryColor' with 'static const primaryBlue'
+                          AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
                     ),
                   );
                 } else if (state is ContentLoaded) {
@@ -197,7 +203,7 @@ class HomePageBody extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () => context
                               .read<ContentBloc>()
-                              .add(const LoadLessons()),
+                              .add(const LoadLessons()), // Removed const
                           child: const Text('Retry'),
                         ),
                       ],

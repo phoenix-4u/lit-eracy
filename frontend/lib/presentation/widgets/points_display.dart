@@ -83,13 +83,13 @@ class _PointsDisplayState extends State<PointsDisplay>
                     end: Alignment.bottomRight,
                     colors: [
                       widget.color,
-                      widget.color.withOpacity(0.8),
+                      widget.color.withAlpha((255 * 0.8).round()),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.color.withOpacity(0.3),
+                      color: widget.color.withAlpha((255 * 0.3).round()),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -116,7 +116,7 @@ class _PointsDisplayState extends State<PointsDisplay>
                     Text(
                       widget.title,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withAlpha((255 * 0.9).round()),
                             fontWeight: FontWeight.w500,
                           ),
                       textAlign: TextAlign.center,

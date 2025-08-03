@@ -98,7 +98,7 @@ class _QuizPageState extends State<QuizPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withAlpha((255 * 0.1).round()),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -107,7 +107,7 @@ class _QuizPageState extends State<QuizPage> {
             child: Column(
               children: [
                 const Icon(
-                  FontAwesomeIcons.questionCircle,
+                  FontAwesomeIcons.circleQuestion,
                   size: 60,
                   color: AppTheme.primaryPurple,
                 ),
@@ -142,7 +142,8 @@ class _QuizPageState extends State<QuizPage> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryPurple.withOpacity(0.1)
+                            ? AppTheme.primaryPurple
+                                .withAlpha((255 * 0.1).round())
                             : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -153,7 +154,7 @@ class _QuizPageState extends State<QuizPage> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withAlpha((255 * 0.05).round()),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -285,7 +286,7 @@ class _QuizPageState extends State<QuizPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withAlpha((255 * 0.1).round()),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
