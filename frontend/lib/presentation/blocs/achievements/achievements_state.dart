@@ -1,12 +1,12 @@
 // # File: frontend/lib/presentation/blocs/achievements/achievements_state.dart
 
-part of 'achievements_bloc.dart';
+part of 'achievements_state.dart';
 
 abstract class AchievementsState extends Equatable {
   const AchievementsState();
 
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }
 
 class AchievementsInitial extends AchievementsState {}

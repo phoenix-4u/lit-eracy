@@ -1,12 +1,12 @@
 // # File: frontend/lib/presentation/blocs/achievements/achievements_event.dart
 
-part of 'achievements_bloc.dart';
+part of 'achievements_event.dart';
 
 abstract class AchievementsEvent extends Equatable {
   const AchievementsEvent();
 
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }
 
 class LoadAchievements extends AchievementsEvent {
@@ -19,10 +19,11 @@ class LoadAchievements extends AchievementsEvent {
 }
 
 class UnlockAchievement extends AchievementsEvent {
-  final dynamic achievement;
+  final int userId;
+  final int achievementId;
 
-  const UnlockAchievement(this.achievement);
+  const UnlockAchievement(this.userId, this.achievementId);
 
   @override
-  List<Object> get props => [achievement];
+  List<Object> get props => [userId, achievementId];
 }

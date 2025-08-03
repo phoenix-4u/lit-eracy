@@ -1,9 +1,8 @@
-# File: frontend/lib/core/di/injection_container.dart
+// # File: frontend/lib/core/di/injection_container.dart
 
-import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // BLoCs
 import '../../presentation/blocs/auth/auth_bloc.dart';
@@ -27,6 +26,7 @@ import '../../domain/repositories/content_repository.dart';
 import '../../domain/repositories/progress_repository.dart';
 import '../../domain/repositories/achievements_repository.dart';
 
+// Repository Implementations
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/user_repository_impl.dart';
 import '../../data/repositories/content_repository_impl.dart';
@@ -44,73 +44,77 @@ import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../services/gamification_service.dart';
 
-import '../constants/app_constants.dart';
-
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  // External dependencies
+  // External
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
-  
-  const secureStorage = FlutterSecureStorage();
-  sl.registerLazySingleton(() => secureStorage);
-  
-  final dio = Dio(BaseOptions(
-    baseUrl: AppConstants.apiUrl,
-    connectTimeout: const Duration(seconds: 30),
-    receiveTimeout: const Duration(seconds: 30),
-  ));
-  sl.registerLazySingleton(() => dio);
-  
+
+  sl.registerLazySingleton(() => Dio());
+
   // Services
-  sl.registerLazySingleton<ApiService>(() => ApiService(sl()));
-  sl.registerLazySingleton<StorageService>(() => StorageService(sl(), sl()));
+  sl.registerLazySingleton<ApiService>(() => ApiService());
+  sl.registerLazySingleton<StorageService>(() => StorageService());
   sl.registerLazySingleton<GamificationService>(() => GamificationService());
-  
+
   // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(sl()),
+    () => AuthRemoteDataSourceImpl(sl<ApiService>().dio),
   );
+
   sl.registerLazySingleton<UserRemoteDataSource>(
-    () => UserRemoteDataSourceImpl(sl()),
+    () => UserRemoteDataSourceImpl(sl<ApiService>().dio),
   );
+
   sl.registerLazySingleton<ContentRemoteDataSource>(
-    () => ContentRemoteDataSourceImpl(sl()),
+    () => ContentRemoteDataSourceImpl(sl<ApiService>().dio),
   );
+
   sl.registerLazySingleton<LocalStorageDataSource>(
-    () => LocalStorageDataSourceImpl(sl()),
+    () => LocalStorageDataSourceImpl(sl<SharedPreferences>()),
   );
-  
+
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(sl(), sl()),
+    () => AuthRepositoryImpl(
+        sl<AuthRemoteDataSource>(), sl<LocalStorageDataSource>()),
   );
+
   sl.registerLazySingleton<UserRepository>(
-    () => UserRepositoryImpl(sl(), sl()),
+    () => UserRepositoryImpl(
+        sl<UserRemoteDataSource>(), sl<LocalStorageDataSource>()),
   );
+
   sl.registerLazySingleton<ContentRepository>(
-    () => ContentRepositoryImpl(sl(), sl()),
+    () => ContentRepositoryImpl(
+        sl<ContentRemoteDataSource>(), sl<LocalStorageDataSource>()),
   );
+
   sl.registerLazySingleton<ProgressRepository>(
-    () => ProgressRepositoryImpl(sl(), sl()),
+    () => ProgressRepositoryImpl(
+        sl<ContentRemoteDataSource>(), sl<LocalStorageDataSource>()),
   );
+
   sl.registerLazySingleton<AchievementsRepository>(
-    () => AchievementsRepositoryImpl(sl(), sl()),
+    () => AchievementsRepositoryImpl(
+        sl<ContentRemoteDataSource>(), sl<LocalStorageDataSource>()),
   );
-  
+
   // Use Cases
-  sl.registerLazySingleton(() => LoginUseCase(sl()));
-  sl.registerLazySingleton(() => RegisterUseCase(sl()));
-  sl.registerLazySingleton(() => GetUserProfileUseCase(sl()));
-  sl.registerLazySingleton(() => GetLessonsUseCase(sl()));
-  sl.registerLazySingleton(() => UpdateProgressUseCase(sl()));
-  sl.registerLazySingleton(() => GetAchievementsUseCase(sl()));
-  
+  sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => GetUserProfileUseCase(sl<UserRepository>()));
+  sl.registerLazySingleton(() => GetLessonsUseCase(sl<ContentRepository>()));
+  sl.registerLazySingleton(
+      () => UpdateProgressUseCase(sl<ProgressRepository>()));
+  sl.registerLazySingleton(
+      () => GetAchievementsUseCase(sl<AchievementsRepository>()));
+
   // BLoCs
-  sl.registerFactory(() => AuthBloc(sl(), sl()));
-  sl.registerFactory(() => UserBloc(sl()));
-  sl.registerFactory(() => ContentBloc(sl()));
-  sl.registerFactory(() => ProgressBloc(sl()));
-  sl.registerFactory(() => AchievementsBloc(sl()));
+  sl.registerFactory(() => AuthBloc(sl<LoginUseCase>(), sl<RegisterUseCase>()));
+  sl.registerFactory(() => UserBloc(sl<GetUserProfileUseCase>()));
+  sl.registerFactory(() => ContentBloc(sl<GetLessonsUseCase>()));
+  sl.registerFactory(() => ProgressBloc(sl<UpdateProgressUseCase>()));
+  sl.registerFactory(() => AchievementsBloc(sl<GetAchievementsUseCase>()));
 }
