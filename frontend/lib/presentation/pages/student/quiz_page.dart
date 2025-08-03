@@ -8,7 +8,7 @@ import '../../../core/theme/app_theme.dart';
 class QuizPage extends StatefulWidget {
   final int quizId;
 
-  const QuizPage({Key? key, required this.quizId}) : super(key: key);
+  const QuizPage({super.key, required this.quizId});
 
   @override
   State<QuizPage> createState() => _QuizPageState();

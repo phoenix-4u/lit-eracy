@@ -2,74 +2,14 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/user.dart';
 import '../../../domain/usecases/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
 
-// Events
-abstract class AuthEvent extends Equatable {
-  const AuthEvent();
+part 'auth_event.dart';
+part 'auth_state.dart';
 
-  @override
-  List<Object> get props => [];
-}
-
-class LoginRequested extends AuthEvent {
-  final String email;
-  final String password;
-
-  const LoginRequested({required this.email, required this.password});
-
-  @override
-  List<Object> get props => [email, password];
-}
-
-class RegisterRequested extends AuthEvent {
-  final Map<String, dynamic> userData;
-
-  const RegisterRequested({required this.userData});
-
-  @override
-  List<Object> get props => [userData];
-}
-
-class LogoutRequested extends AuthEvent {}
-
-class AuthCheckRequested extends AuthEvent {}
-
-// States
-abstract class AuthState extends Equatable {
-  const AuthState();
-
-  @override
-  List<Object> get props => [];
-}
-
-class AuthInitial extends AuthState {}
-
-class AuthLoading extends AuthState {}
-
-class AuthAuthenticated extends AuthState {
-  final User user;
-
-  const AuthAuthenticated({required this.user});
-
-  @override
-  List<Object> get props => [user];
-}
-
-class AuthUnauthenticated extends AuthState {}
-
-class AuthError extends AuthState {
-  final String message;
-
-  const AuthError({required this.message});
-
-  @override
-  List<Object> get props => [message];
-}
-
-// BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUseCase loginUseCase;
   final RegisterUseCase registerUseCase;
@@ -120,6 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
+    // In a real app, you would clear tokens here
     emit(AuthUnauthenticated());
   }
 
@@ -127,7 +68,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthCheckRequested event,
     Emitter<AuthState> emit,
   ) async {
-    // Implementation for checking authentication status
+    // In a real app, you would check for a stored token here
+    // For now, we'll assume the user is unauthenticated on startup
     emit(AuthUnauthenticated());
   }
 }

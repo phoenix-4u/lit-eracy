@@ -8,9 +8,9 @@ class AIAssistantButton extends StatefulWidget {
   final VoidCallback? onTap;
 
   const AIAssistantButton({
-    Key? key,
+    super.key,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<AIAssistantButton> createState() => _AIAssistantButtonState();

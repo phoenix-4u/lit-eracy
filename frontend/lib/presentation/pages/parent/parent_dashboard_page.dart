@@ -6,10 +6,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../blocs/achievements/achievements_bloc.dart';
-import '../../widgets/achievement_badge.dart';
 
 class ParentDashboardPage extends StatefulWidget {
-  const ParentDashboardPage({Key? key}) : super(key: key);
+  const ParentDashboardPage({super.key});
 
   @override
   State<ParentDashboardPage> createState() => _ParentDashboardPageState();

@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../core/theme/app_theme.dart';
 
 class StreakCounter extends StatefulWidget {
   final int currentStreak;
@@ -10,11 +9,11 @@ class StreakCounter extends StatefulWidget {
   final VoidCallback? onStreakTap;
 
   const StreakCounter({
-    Key? key,
+    super.key,
     required this.currentStreak,
     required this.longestStreak,
     this.onStreakTap,
-  }) : super(key: key);
+  });
 
   @override
   State<StreakCounter> createState() => _StreakCounterState();

@@ -40,7 +40,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred'));
+      return const Left(ServerFailure('Unexpected error occurred'));
     }
   }
 
@@ -67,7 +67,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred'));
+      return const Left(ServerFailure('Unexpected error occurred'));
     }
   }
 
@@ -86,7 +86,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Logout failed'));
+      return const Left(ServerFailure('Logout failed'));
     }
   }
 
@@ -105,7 +105,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on AuthenticationException catch (e) {
       return Left(AuthenticationFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Token refresh failed'));
+      return const Left(ServerFailure('Token refresh failed'));
     }
   }
 

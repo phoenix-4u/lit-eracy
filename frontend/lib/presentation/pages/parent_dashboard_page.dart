@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ai_literacy_app/core/di.dart';
-import 'package:ai_literacy_app/presentation/blocs/achievement/achievement_bloc.dart';
+import 'package:ai_literacy_app/presentation/blocs/achievements/achievements_bloc.dart';
 import 'package:ai_literacy_app/presentation/widgets/achievement_badge.dart';
 
 class ParentDashboardPage extends StatelessWidget {
@@ -12,19 +12,19 @@ class ParentDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<AchievementBloc>()..add(LoadAchievements(userId)),
+      create: (_) => sl<AchievementsBloc>()..add(LoadAchievements()),
       child: Scaffold(
         appBar: AppBar(title: const Text('Parent Dashboard')),
         body: Column(
           children: [
             _buildScreenTimeControls(context),
             Expanded(
-              child: BlocBuilder<AchievementBloc, AchievementState>(
+              child: BlocBuilder<AchievementsBloc, AchievementsState>(
                 builder: (context, state) {
-                  if (state is AchievementLoading) {
+                  if (state is AchievementsLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (state is AchievementLoaded) {
+                  if (state is AchievementsLoaded) {
                     return GridView.count(
                       crossAxisCount: 3,
                       children: state.achievements
@@ -32,7 +32,7 @@ class ParentDashboardPage extends StatelessWidget {
                           .toList(),
                     );
                   }
-                  if (state is AchievementError) {
+                  if (state is AchievementsError) {
                     return Center(child: Text(state.message));
                   }
                   return const Center(child: Text('No achievements'));

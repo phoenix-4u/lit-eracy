@@ -9,7 +9,7 @@ import '../../blocs/achievements/achievements_bloc.dart';
 import '../../widgets/achievement_badge.dart';
 
 class AchievementsPage extends StatefulWidget {
-  const AchievementsPage({Key? key}) : super(key: key);
+  const AchievementsPage({super.key});
 
   @override
   State<AchievementsPage> createState() => _AchievementsPageState();

@@ -6,7 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 
 class AIChatPage extends StatefulWidget {
-  const AIChatPage({Key? key}) : super(key: key);
+  const AIChatPage({super.key});
 
   @override
   State<AIChatPage> createState() => _AIChatPageState();

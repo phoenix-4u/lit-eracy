@@ -25,7 +25,7 @@ class AchievementsBloc extends Bloc<AchievementsEvent, AchievementsState> {
   ) async {
     emit(AchievementsLoading());
 
-    final result = await getAchievementsUseCase(NoParams());
+    final result = await getAchievementsUseCase(const NoParams());
 
     result.fold(
       (failure) => emit(AchievementsError(message: failure.message)),

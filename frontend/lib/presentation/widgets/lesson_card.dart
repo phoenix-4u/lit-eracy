@@ -10,11 +10,11 @@ class LessonCard extends StatefulWidget {
   final bool isCompleted;
 
   const LessonCard({
-    Key? key,
+    super.key,
     required this.lesson,
     this.onTap,
     this.isCompleted = false,
-  }) : super(key: key);
+  });
 
   @override
   State<LessonCard> createState() => _LessonCardState();

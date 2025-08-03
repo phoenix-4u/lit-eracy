@@ -37,7 +37,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
     try {
       await sharedPreferences.setString(_userKey, json.encode(user.toJson()));
     } catch (e) {
-      throw CacheException('Failed to cache user data');
+      throw const CacheException('Failed to cache user data');
     }
   }
 
@@ -51,7 +51,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
       }
       return null;
     } catch (e) {
-      throw CacheException('Failed to get cached user data');
+      throw const CacheException('Failed to get cached user data');
     }
   }
 
@@ -61,7 +61,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
       final lessonsJson = lessons.map((lesson) => lesson.toJson()).toList();
       await sharedPreferences.setString(_lessonsKey, json.encode(lessonsJson));
     } catch (e) {
-      throw CacheException('Failed to cache lessons');
+      throw const CacheException('Failed to cache lessons');
     }
   }
 
@@ -78,7 +78,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
       }
       return [];
     } catch (e) {
-      throw CacheException('Failed to get cached lessons');
+      throw const CacheException('Failed to get cached lessons');
     }
   }
 
@@ -90,7 +90,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
       await sharedPreferences.setString(
           _achievementsKey, json.encode(achievementsJson));
     } catch (e) {
-      throw CacheException('Failed to cache achievements');
+      throw const CacheException('Failed to cache achievements');
     }
   }
 
@@ -108,7 +108,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
       }
       return [];
     } catch (e) {
-      throw CacheException('Failed to get cached achievements');
+      throw const CacheException('Failed to get cached achievements');
     }
   }
 
@@ -121,7 +121,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
       await sharedPreferences.remove(_tokenKey);
       await sharedPreferences.remove(_refreshTokenKey);
     } catch (e) {
-      throw CacheException('Failed to clear cache');
+      throw const CacheException('Failed to clear cache');
     }
   }
 
@@ -130,7 +130,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
     try {
       await sharedPreferences.setString(_tokenKey, token);
     } catch (e) {
-      throw CacheException('Failed to store token');
+      throw const CacheException('Failed to store token');
     }
   }
 
@@ -139,7 +139,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
     try {
       return sharedPreferences.getString(_tokenKey);
     } catch (e) {
-      throw CacheException('Failed to get token');
+      throw const CacheException('Failed to get token');
     }
   }
 
@@ -148,7 +148,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
     try {
       await sharedPreferences.setString(_refreshTokenKey, refreshToken);
     } catch (e) {
-      throw CacheException('Failed to store refresh token');
+      throw const CacheException('Failed to store refresh token');
     }
   }
 
@@ -157,7 +157,7 @@ class LocalStorageDataSourceImpl implements LocalStorageDataSource {
     try {
       return sharedPreferences.getString(_refreshTokenKey);
     } catch (e) {
-      throw CacheException('Failed to get refresh token');
+      throw const CacheException('Failed to get refresh token');
     }
   }
 }

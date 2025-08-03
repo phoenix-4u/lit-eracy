@@ -11,11 +11,11 @@ class AchievementBadge extends StatefulWidget {
   final bool showDetails;
 
   const AchievementBadge({
-    Key? key,
+    super.key,
     required this.achievement,
     this.onTap,
     this.showDetails = true,
-  }) : super(key: key);
+  });
 
   @override
   State<AchievementBadge> createState() => _AchievementBadgeState();

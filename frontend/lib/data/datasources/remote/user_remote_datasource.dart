@@ -29,7 +29,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         final jsonData = json.decode(response.body);
         return jsonData['user'] as Map<String, dynamic>;
       } else if (response.statusCode == 404) {
-        throw ServerException('User not found');
+        throw const ServerException('User not found');
       } else {
         throw ServerException(
             'Failed to get user profile: ${response.statusCode}');
@@ -38,7 +38,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while getting user profile');
+      throw const NetworkException('Network error while getting user profile');
     }
   }
 
@@ -64,7 +64,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while updating user profile');
+      throw const NetworkException('Network error while updating user profile');
     }
   }
 
@@ -83,7 +83,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while deleting user');
+      throw const NetworkException('Network error while deleting user');
     }
   }
 
@@ -109,7 +109,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while getting users');
+      throw const NetworkException('Network error while getting users');
     }
   }
 }

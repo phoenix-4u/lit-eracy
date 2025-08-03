@@ -6,7 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 
 class TeacherDashboardPage extends StatefulWidget {
-  const TeacherDashboardPage({Key? key}) : super(key: key);
+  const TeacherDashboardPage({super.key});
 
   @override
   State<TeacherDashboardPage> createState() => _TeacherDashboardPageState();
@@ -61,7 +61,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                     children: [
                       CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
                         child: const Icon(
                           FontAwesomeIcons.chalkboardTeacher,
                           color: Colors.white,
@@ -90,7 +90,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                                   .textTheme
                                   .bodyLarge
                                   ?.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                   ),
                             ),
                           ],
@@ -573,7 +573,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
               ],
             ),
           ),
-          Icon(
+          const Icon(
             FontAwesomeIcons.chevronRight,
             color: AppTheme.secondaryText,
             size: 16,

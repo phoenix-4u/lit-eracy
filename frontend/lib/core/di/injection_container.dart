@@ -10,7 +10,6 @@ import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../services/gamification_service.dart';
 import '../services/token_storage.dart';
-import '../error/failures.dart';
 
 // Data Layer
 import '../../data/datasources/remote/auth_remote_datasource.dart';

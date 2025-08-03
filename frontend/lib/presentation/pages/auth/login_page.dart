@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 
-import '../../blocs/auth/auth_state.dart';
+// import '../../blocs/auth/auth_state.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/loading_button.dart';
 import '../home_page.dart';
 import '../../../core/theme/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();

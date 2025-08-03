@@ -8,7 +8,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/di.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomePageBody extends StatelessWidget {
-  const HomePageBody({Key? key}) : super(key: key);
+  const HomePageBody({super.key});
 
   @override
   Widget build(BuildContext context) {

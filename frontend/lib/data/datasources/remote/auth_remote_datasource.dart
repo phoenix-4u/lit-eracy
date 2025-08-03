@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 
 import '../../../config/api_config.dart';
 import '../../../core/error/exceptions.dart';
-import '../../../domain/entities/user.dart';
 
 abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String email, String password);
@@ -34,7 +33,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else if (response.statusCode == 401) {
-        throw AuthenticationException('Invalid credentials');
+        throw const AuthenticationException('Invalid credentials');
       } else {
         throw ServerException('Login failed: ${response.statusCode}');
       }
@@ -42,7 +41,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (e is AuthenticationException || e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error during login');
+      throw const NetworkException('Network error during login');
     }
   }
 
@@ -68,7 +67,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (e is ValidationException || e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error during registration');
+      throw const NetworkException('Network error during registration');
     }
   }
 
@@ -87,7 +86,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error during logout');
+      throw const NetworkException('Network error during logout');
     }
   }
 
@@ -105,13 +104,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw AuthenticationException('Token refresh failed');
+        throw const AuthenticationException('Token refresh failed');
       }
     } catch (e) {
       if (e is AuthenticationException) {
         rethrow;
       }
-      throw NetworkException('Network error during token refresh');
+      throw const NetworkException('Network error during token refresh');
     }
   }
 }

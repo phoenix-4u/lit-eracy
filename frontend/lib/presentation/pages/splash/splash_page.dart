@@ -1,16 +1,13 @@
 // # File: frontend/lib/presentation/pages/splash/splash_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lottie/lottie.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/app_router.dart';
-import '../../blocs/auth/auth_bloc.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({Key? key}) : super(key: key);
+  const SplashPage({super.key});
 
   @override
   State<SplashPage> createState() => _SplashPageState();

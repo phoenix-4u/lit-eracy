@@ -44,7 +44,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while fetching lessons');
+      throw const NetworkException('Network error while fetching lessons');
     }
   }
 
@@ -67,7 +67,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while fetching achievements');
+      throw const NetworkException('Network error while fetching achievements');
     }
   }
 
@@ -90,7 +90,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while fetching content');
+      throw const NetworkException('Network error while fetching content');
     }
   }
 
@@ -106,7 +106,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
         final jsonData = json.decode(response.body);
         return jsonData['lesson'] as Map<String, dynamic>;
       } else if (response.statusCode == 404) {
-        throw ServerException('Lesson not found');
+        throw const ServerException('Lesson not found');
       } else {
         throw ServerException('Failed to fetch lesson: ${response.statusCode}');
       }
@@ -114,7 +114,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while fetching lesson');
+      throw const NetworkException('Network error while fetching lesson');
     }
   }
 
@@ -130,7 +130,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
         final jsonData = json.decode(response.body);
         return jsonData['content'] as Map<String, dynamic>;
       } else if (response.statusCode == 404) {
-        throw ServerException('Content not found');
+        throw const ServerException('Content not found');
       } else {
         throw ServerException(
             'Failed to fetch content: ${response.statusCode}');
@@ -139,7 +139,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while fetching content');
+      throw const NetworkException('Network error while fetching content');
     }
   }
 
@@ -166,7 +166,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while updating progress');
+      throw const NetworkException('Network error while updating progress');
     }
   }
 
@@ -190,7 +190,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while getting user progress');
+      throw const NetworkException('Network error while getting user progress');
     }
   }
 
@@ -215,7 +215,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while getting content progress');
+      throw const NetworkException('Network error while getting content progress');
     }
   }
 
@@ -240,7 +240,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while unlocking achievement');
+      throw const NetworkException('Network error while unlocking achievement');
     }
   }
 
@@ -264,7 +264,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw NetworkException('Network error while getting user achievements');
+      throw const NetworkException('Network error while getting user achievements');
     }
   }
 }

@@ -18,7 +18,7 @@ class CustomTextField extends StatefulWidget {
   final int maxLines;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     required this.hint,
     this.controller,
@@ -31,7 +31,7 @@ class CustomTextField extends StatefulWidget {
     this.onSuffixIconTap,
     this.enabled = true,
     this.maxLines = 1,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();

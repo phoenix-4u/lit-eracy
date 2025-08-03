@@ -1,7 +1,6 @@
 // # File: frontend/lib/presentation/blocs/auth/auth_state.dart
 
-import 'package:equatable/equatable.dart';
-import '../../../domain/entities/user.dart';
+part of 'auth_bloc.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -32,13 +31,4 @@ class AuthError extends AuthState {
 
   @override
   List<Object> get props => [message];
-}
-
-// Alias for backward compatibility
-class AuthSuccess extends AuthAuthenticated {
-  const AuthSuccess({required super.user});
-}
-
-class AuthFailure extends AuthError {
-  const AuthFailure({required super.message});
 }

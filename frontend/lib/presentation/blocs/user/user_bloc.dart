@@ -25,7 +25,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(UserLoading());
 
     // Mock user data for now
-    const user = User(
+    final user = User(
       id: 1,
       username: 'student1',
       email: 'student@example.com',
@@ -37,14 +37,16 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       createdAt: DateTime.now(),
     );
 
-    const points = UserPoints(
+    final points = UserPoints(
+      userId: 1,
       knowledgeGems: 150,
       wordCoins: 75,
       imaginationSparks: 30,
       totalPoints: 255,
-      currentStreak: 5,
-      longestStreak: 12,
+      streakDays: 5,
       lastActivityDate: DateTime.now(),
+      level: 3,
+      experiencePoints: 255,
     );
 
     emit(UserLoaded(user: user, points: points));

@@ -46,7 +46,7 @@ class ApiServiceImpl implements ApiService {
   Future<void> _checkConnectivity() async {
     final connectivityResult = await connectivity.checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      throw NetworkException('No internet connection');
+      throw const NetworkException('No internet connection');
     }
   }
 
@@ -66,7 +66,7 @@ class ApiServiceImpl implements ApiService {
 
       return _handleResponse(response);
     } on SocketException {
-      throw NetworkException('Network error occurred');
+      throw const NetworkException('Network error occurred');
     } catch (e) {
       if (e is NetworkException || e is ServerException) rethrow;
       throw ServerException('Unexpected error: $e');
@@ -90,7 +90,7 @@ class ApiServiceImpl implements ApiService {
 
       return _handleResponse(response);
     } on SocketException {
-      throw NetworkException('Network error occurred');
+      throw const NetworkException('Network error occurred');
     } catch (e) {
       if (e is NetworkException || e is ServerException) rethrow;
       throw ServerException('Unexpected error: $e');
@@ -114,7 +114,7 @@ class ApiServiceImpl implements ApiService {
 
       return _handleResponse(response);
     } on SocketException {
-      throw NetworkException('Network error occurred');
+      throw const NetworkException('Network error occurred');
     } catch (e) {
       if (e is NetworkException || e is ServerException) rethrow;
       throw ServerException('Unexpected error: $e');
@@ -133,7 +133,7 @@ class ApiServiceImpl implements ApiService {
 
       return _handleResponse(response);
     } on SocketException {
-      throw NetworkException('Network error occurred');
+      throw const NetworkException('Network error occurred');
     } catch (e) {
       if (e is NetworkException || e is ServerException) rethrow;
       throw ServerException('Unexpected error: $e');
@@ -153,9 +153,9 @@ class ApiServiceImpl implements ApiService {
         return {'message': 'Success', 'data': response.body};
       }
     } else if (response.statusCode == 401) {
-      throw AuthenticationException('Authentication failed');
+      throw const AuthenticationException('Authentication failed');
     } else if (response.statusCode == 404) {
-      throw ServerException('Resource not found');
+      throw const ServerException('Resource not found');
     } else {
       throw ServerException('Server error: ${response.statusCode}');
     }

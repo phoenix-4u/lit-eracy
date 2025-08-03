@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ai_literacy_app/presentation/blocs/auth_bloc.dart';
+import 'package:ai_literacy_app/presentation/blocs/auth/auth_bloc.dart'; // Corrected import path
 import 'package:ai_literacy_app/presentation/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -11,7 +11,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController(); // Renamed for clarity
   final _passwordController = TextEditingController();
 
   @override
@@ -20,13 +20,15 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(title: const Text('Login')),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthSuccess) {
+          if (state is AuthAuthenticated) {
+            // FIX: Was AuthSuccess
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HomePage()),
             );
-          } else if (state is AuthFailure) {
+          } else if (state is AuthError) {
+            // FIX: Was AuthFailure
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error)),
+              SnackBar(content: Text(state.message)), // FIX: Was state.error
             );
           }
         },
@@ -39,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 TextField(
-                  controller: _usernameController,
+                  controller: _emailController, // FIX: Renamed controller
                   decoration: const InputDecoration(labelText: 'Email'),
                 ),
                 TextField(
@@ -50,9 +52,12 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    final email = _usernameController.text;
+                    final email = _emailController.text;
                     final password = _passwordController.text;
-                    context.read<AuthBloc>().add(LoginEvent(email: email, password: password));
+                    // FIX: Use the correct event 'LoginRequested'
+                    context
+                        .read<AuthBloc>()
+                        .add(LoginRequested(email: email, password: password));
                   },
                   child: const Text('Login'),
                 ),
@@ -66,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }

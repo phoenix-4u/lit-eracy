@@ -11,7 +11,7 @@ import '../../widgets/custom_text_field.dart';
 import '../../widgets/loading_button.dart';
 
 class RegistrationPage extends StatefulWidget {
-  const RegistrationPage({Key? key}) : super(key: key);
+  const RegistrationPage({super.key});
 
   @override
   State<RegistrationPage> createState() => _RegistrationPageState();
@@ -45,10 +45,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
       backgroundColor: AppTheme.lightBackground,
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthSuccess) {
+          if (state is AuthAuthenticated) {
             Navigator.of(context)
                 .pushReplacementNamed(AppRouter.studentDashboard);
-          } else if (state is AuthFailure) {
+          } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -154,7 +154,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           controller: _ageController,
                           label: 'Age',
                           hint: 'Enter your age',
-                          prefixIcon: FontAwesomeIcons.birthdayCake,
+                          prefixIcon: FontAwesomeIcons
+                              .cakeCandles, // Deprecated: birthdayCake
                           keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value != null && value.isNotEmpty) {
@@ -281,14 +282,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ? int.tryParse(_gradeController.text)
           : null;
 
+//<fix>      // Create a map to hold all the user data
+      final Map<String, dynamic> userData = {
+        'username': _usernameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'fullName': _fullNameController.text,
+        'age': age,
+        'grade': grade,
+      };
+
+      // Dispatch the event with the single 'userData' parameter
       context.read<AuthBloc>().add(RegisterRequested(
-            username: _usernameController.text,
-            email: _emailController.text,
-            password: _passwordController.text,
-            fullName: _fullNameController.text,
-            age: age,
-            grade: grade,
+            userData: userData,
           ));
+//</fix>
     }
   }
 }

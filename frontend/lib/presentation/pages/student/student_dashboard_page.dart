@@ -1,3 +1,5 @@
+import '../../../domain/entities/achievement.dart';
+import '../../../domain/entities/user_points.dart';
 // # File: frontend/lib/presentation/pages/student/student_dashboard_page.dart
 
 import 'package:flutter/material.dart';
@@ -13,11 +15,12 @@ import '../../widgets/points_display.dart';
 import '../../widgets/streak_counter.dart';
 import '../../widgets/achievement_badge.dart';
 import '../../widgets/lesson_card.dart';
+import '../../../domain/entities/lesson.dart';
 import '../../widgets/progress_card.dart';
 import '../../widgets/ai_assistant_button.dart';
 
 class StudentDashboardPage extends StatefulWidget {
-  const StudentDashboardPage({Key? key}) : super(key: key);
+  const StudentDashboardPage({super.key});
 
   @override
   State<StudentDashboardPage> createState() => _StudentDashboardPageState();
@@ -50,7 +53,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
 
     // Load user dashboard data
     context.read<UserBloc>().add(const LoadUserDashboard(1));
-    context.read<AchievementsBloc>().add(const LoadAchievements(1));
+    context.read<AchievementsBloc>().add(LoadAchievements());
   }
 
   @override
@@ -100,7 +103,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                               builder: (context, state) {
                                 if (state is UserLoaded) {
                                   return _buildWelcomeHeader(
-                                      state.user.fullName);
+                                      state.user.fullName ?? 'Student');
                                 }
                                 return _buildWelcomeHeader('Student');
                               },
@@ -234,8 +237,9 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
         // Streak Counter
         if (state.points != null)
           StreakCounter(
-            currentStreak: state.points!.currentStreak,
-            longestStreak: state.points!.longestStreak,
+            currentStreak: state.points!.streakDays,
+            longestStreak: state.points!
+                .streakDays, // No longestStreak, use streakDays or remove if not needed
             onStreakTap: () => _showStreakInfo(),
           ),
 
@@ -347,8 +351,15 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                       return Padding(
                         padding: const EdgeInsets.only(right: 12),
                         child: AchievementBadge(
-                          achievement: null,
-                          isLocked: true,
+                          achievement: Achievement(
+                            id: -1,
+                            title: 'Locked',
+                            description: 'Unlock to reveal!',
+                            iconName: 'lock',
+                            pointsRequired: 0,
+                            category: 'locked',
+                            isUnlocked: false,
+                          ),
                         ),
                       );
                     }
@@ -380,33 +391,51 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
             scrollDirection: Axis.horizontal,
             children: [
               LessonCard(
-                title: 'Fun with Numbers',
-                subject: 'Math',
-                duration: '10 min',
-                points: 15,
-                difficulty: 2,
+                lesson: Lesson(
+                  id: 1,
+                  title: 'Fun with Numbers',
+                  description: 'A fun math lesson.',
+                  content: '',
+                  grade: 2,
+                  subject: 'Math',
+                  difficulty: 'Easy',
+                  estimatedDuration: 10,
+                  createdAt: DateTime.now(),
+                ),
                 onTap: () => Navigator.of(context).pushNamed(
                   AppRouter.lesson,
                   arguments: {'lessonId': 1},
                 ),
               ),
               LessonCard(
-                title: 'Letter Adventures',
-                subject: 'English',
-                duration: '8 min',
-                points: 10,
-                difficulty: 1,
+                lesson: Lesson(
+                  id: 2,
+                  title: 'Letter Adventures',
+                  description: 'An English lesson.',
+                  content: '',
+                  grade: 2,
+                  subject: 'English',
+                  difficulty: 'Easy',
+                  estimatedDuration: 8,
+                  createdAt: DateTime.now(),
+                ),
                 onTap: () => Navigator.of(context).pushNamed(
                   AppRouter.lesson,
                   arguments: {'lessonId': 2},
                 ),
               ),
               LessonCard(
-                title: 'Science Wonders',
-                subject: 'Science',
-                duration: '12 min',
-                points: 20,
-                difficulty: 3,
+                lesson: Lesson(
+                  id: 3,
+                  title: 'Science Wonders',
+                  description: 'A science lesson.',
+                  content: '',
+                  grade: 2,
+                  subject: 'Science',
+                  difficulty: 'Medium',
+                  estimatedDuration: 12,
+                  createdAt: DateTime.now(),
+                ),
                 onTap: () => Navigator.of(context).pushNamed(
                   AppRouter.lesson,
                   arguments: {'lessonId': 3},

@@ -8,7 +8,7 @@ import '../../../core/theme/app_theme.dart';
 class LessonPage extends StatefulWidget {
   final int lessonId;
 
-  const LessonPage({Key? key, required this.lessonId}) : super(key: key);
+  const LessonPage({super.key, required this.lessonId});
 
   @override
   State<LessonPage> createState() => _LessonPageState();

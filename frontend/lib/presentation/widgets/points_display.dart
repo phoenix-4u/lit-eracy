@@ -1,8 +1,6 @@
 // # File: frontend/lib/presentation/widgets/points_display.dart
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../core/theme/app_theme.dart';
 
 class PointsDisplay extends StatefulWidget {
   final String title;
@@ -12,13 +10,13 @@ class PointsDisplay extends StatefulWidget {
   final VoidCallback? onTap;
 
   const PointsDisplay({
-    Key? key,
+    super.key,
     required this.title,
     required this.points,
     required this.color,
     required this.icon,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<PointsDisplay> createState() => _PointsDisplayState();
