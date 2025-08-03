@@ -11,6 +11,7 @@ class ApiConfig {
   static const String logoutEndpoint = '$baseUrl$apiVersion/auth/logout';
 
   // User endpoints
+  static const String usersEndpoint = '$baseUrl$apiVersion/users';
   static const String userProfileEndpoint = '$baseUrl$apiVersion/user/profile';
   static const String updateProfileEndpoint =
       '$baseUrl$apiVersion/user/profile';

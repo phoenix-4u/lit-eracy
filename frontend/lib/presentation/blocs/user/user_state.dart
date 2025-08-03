@@ -23,7 +23,17 @@ class UserLoaded extends UserState {
   });
 
   @override
-  List<Object?> get props => [user, points];
+  List<Object> get props => [user, points!];
+
+  UserLoaded copyWith({
+    User? user,
+    UserPoints? points,
+  }) {
+    return UserLoaded(
+      user: user ?? this.user,
+      points: points ?? this.points,
+    );
+  }
 }
 
 class UserError extends UserState {

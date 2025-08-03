@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lit_eracy/core/di.dart';
-import 'package:lit_eracy/presentation/blocs/achievement/achievement_bloc.dart';
-import 'package:lit_eracy/presentation/widgets/achievement_badge.dart';
+import 'package:ai_literacy_app/core/di.dart';
+import 'package:ai_literacy_app/presentation/blocs/achievement/achievement_bloc.dart';
+import 'package:ai_literacy_app/presentation/widgets/achievement_badge.dart';
 
 class ParentDashboardPage extends StatelessWidget {
   final int userId;

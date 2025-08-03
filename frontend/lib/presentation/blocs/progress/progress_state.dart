@@ -13,28 +13,34 @@ class ProgressInitial extends ProgressState {}
 
 class ProgressLoading extends ProgressState {}
 
-class ProgressLoaded extends ProgressState {
-  final List<dynamic> progressData;
+class ProgressUpdated extends ProgressState {
+  final String contentId;
+  final double completionPercentage;
+  final int timeSpent;
 
-  const ProgressLoaded(this.progressData);
+  const ProgressUpdated({
+    required this.contentId,
+    required this.completionPercentage,
+    required this.timeSpent,
+  });
 
   @override
-  List<Object> get props => [progressData];
+  List<Object> get props => [contentId, completionPercentage, timeSpent];
 }
 
-class ProgressUpdated extends ProgressState {
-  final String message;
+class ProgressLoaded extends ProgressState {
+  final Progress progress;
 
-  const ProgressUpdated(this.message);
+  const ProgressLoaded({required this.progress});
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [progress];
 }
 
 class ProgressError extends ProgressState {
   final String message;
 
-  const ProgressError(this.message);
+  const ProgressError({required this.message});
 
   @override
   List<Object> get props => [message];

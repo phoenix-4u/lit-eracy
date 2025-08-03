@@ -1,71 +1,80 @@
 // # File: frontend/lib/core/services/storage_service.dart
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
-class StorageService {
-  static SharedPreferences? _preferences;
+abstract class StorageService {
+  Future<void> store(String key, dynamic value);
+  Future<T?> get<T>(String key);
+  Future<String?> getString(String key);
+  Future<void> remove(String key);
+  Future<void> clear();
+  Future<bool> containsKey(String key);
+}
 
-  static Future<void> init() async {
-    _preferences = await SharedPreferences.getInstance();
-  }
+class StorageServiceImpl implements StorageService {
+  final SharedPreferences _prefs;
 
-  static SharedPreferences get instance {
-    if (_preferences == null) {
-      throw Exception(
-          'StorageService not initialized. Call StorageService.init() first.');
+  StorageServiceImpl(this._prefs);
+
+  @override
+  Future<void> store(String key, dynamic value) async {
+    if (value is String) {
+      await _prefs.setString(key, value);
+    } else if (value is int) {
+      await _prefs.setInt(key, value);
+    } else if (value is double) {
+      await _prefs.setDouble(key, value);
+    } else if (value is bool) {
+      await _prefs.setBool(key, value);
+    } else if (value is List<String>) {
+      await _prefs.setStringList(key, value);
+    } else {
+      // Store as JSON string for complex objects
+      await _prefs.setString(key, json.encode(value));
     }
-    return _preferences!;
   }
 
-  static Future<bool> setBool(String key, bool value) async {
-    return await instance.setBool(key, value);
+  @override
+  Future<T?> get<T>(String key) async {
+    final value = _prefs.get(key);
+    if (value == null) return null;
+
+    if (T == String) return value as T?;
+    if (T == int) return value as T?;
+    if (T == double) return value as T?;
+    if (T == bool) return value as T?;
+    if (T == List<String>) return value as T?;
+
+    // Try to decode JSON for complex objects
+    try {
+      if (value is String) {
+        return json.decode(value) as T?;
+      }
+    } catch (e) {
+      return null;
+    }
+
+    return value as T?;
   }
 
-  static bool? getBool(String key) {
-    return instance.getBool(key);
+  @override
+  Future<String?> getString(String key) async {
+    return _prefs.getString(key);
   }
 
-  static Future<bool> setString(String key, String value) async {
-    return await instance.setString(key, value);
+  @override
+  Future<void> remove(String key) async {
+    await _prefs.remove(key);
   }
 
-  static String? getString(String key) {
-    return instance.getString(key);
+  @override
+  Future<void> clear() async {
+    await _prefs.clear();
   }
 
-  static Future<bool> setInt(String key, int value) async {
-    return await instance.setInt(key, value);
-  }
-
-  static int? getInt(String key) {
-    return instance.getInt(key);
-  }
-
-  static Future<bool> setDouble(String key, double value) async {
-    return await instance.setDouble(key, value);
-  }
-
-  static double? getDouble(String key) {
-    return instance.getDouble(key);
-  }
-
-  static Future<bool> setStringList(String key, List<String> value) async {
-    return await instance.setStringList(key, value);
-  }
-
-  static List<String>? getStringList(String key) {
-    return instance.getStringList(key);
-  }
-
-  static Future<bool> remove(String key) async {
-    return await instance.remove(key);
-  }
-
-  static Future<bool> clear() async {
-    return await instance.clear();
-  }
-
-  static bool containsKey(String key) {
-    return instance.containsKey(key);
+  @override
+  Future<bool> containsKey(String key) async {
+    return _prefs.containsKey(key);
   }
 }

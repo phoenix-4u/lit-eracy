@@ -2,7 +2,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-
+import '../../../domain/entities/progress.dart';
 import '../../../domain/usecases/progress/update_progress_usecase.dart';
 
 part 'progress_event.dart';
@@ -22,14 +22,21 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
   ) async {
     emit(ProgressLoading());
 
-    // Mock progress update
-    await Future.delayed(const Duration(seconds: 1));
-
-    emit(ProgressUpdated(
+    final result = await _updateProgressUseCase(UpdateProgressParams(
+      userId: event.userId,
       contentId: event.contentId,
       completionPercentage: event.completionPercentage,
       timeSpent: event.timeSpent,
     ));
+
+    result.fold(
+      (failure) => emit(ProgressError(message: failure.message)),
+      (_) => emit(ProgressUpdated(
+        contentId: event.contentId,
+        completionPercentage: event.completionPercentage,
+        timeSpent: event.timeSpent,
+      )),
+    );
   }
 
   Future<void> _onLoadProgress(
@@ -37,25 +44,8 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     Emitter<ProgressState> emit,
   ) async {
     emit(ProgressLoading());
-
-    // Mock progress data
-    final progressList = [
-      {
-        'id': 1,
-        'content_id': 1,
-        'completion_percentage': 75.0,
-        'time_spent': 300,
-        'is_completed': false,
-      },
-      {
-        'id': 2,
-        'content_id': 2,
-        'completion_percentage': 100.0,
-        'time_spent': 480,
-        'is_completed': true,
-      }
-    ];
-
-    emit(ProgressLoaded(progressList));
+    // Implementation for loading user progress
+    // This would require a GetUserProgressUseCase which isn't implemented yet
+    emit(ProgressInitial());
   }
 }

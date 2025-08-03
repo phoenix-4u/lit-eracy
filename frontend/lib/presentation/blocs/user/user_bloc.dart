@@ -34,7 +34,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       grade: 2,
       role: 'student',
       isActive: true,
-      createdAt: '2024-01-01T00:00:00Z',
+      createdAt: DateTime.now(),
     );
 
     const points = UserPoints(
@@ -44,7 +44,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       totalPoints: 255,
       currentStreak: 5,
       longestStreak: 12,
-      lastActivityDate: '2024-01-15T10:30:00Z',
+      lastActivityDate: DateTime.now(),
     );
 
     emit(UserLoaded(user: user, points: points));

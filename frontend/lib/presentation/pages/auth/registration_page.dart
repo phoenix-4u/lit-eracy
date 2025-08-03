@@ -96,7 +96,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   // Form Fields
                   CustomTextField(
                     controller: _fullNameController,
-                    labelText: 'Full Name',
+                    label: 'Full Name',
+                    hint: 'Enter your full name',
                     prefixIcon: FontAwesomeIcons.user,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -110,7 +111,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   CustomTextField(
                     controller: _usernameController,
-                    labelText: 'Username',
+                    label: 'Username',
+                    hint: 'Enter a username',
                     prefixIcon: FontAwesomeIcons.userTag,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -127,7 +129,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   CustomTextField(
                     controller: _emailController,
-                    labelText: 'Email',
+                    label: 'Email',
+                    hint: 'Enter your email',
                     prefixIcon: FontAwesomeIcons.envelope,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -149,7 +152,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       Expanded(
                         child: CustomTextField(
                           controller: _ageController,
-                          labelText: 'Age',
+                          label: 'Age',
+                          hint: 'Enter your age',
                           prefixIcon: FontAwesomeIcons.birthdayCake,
                           keyboardType: TextInputType.number,
                           validator: (value) {
@@ -167,7 +171,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       Expanded(
                         child: CustomTextField(
                           controller: _gradeController,
-                          labelText: 'Grade',
+                          label: 'Grade',
+                          hint: 'Enter your grade',
                           prefixIcon: FontAwesomeIcons.school,
                           keyboardType: TextInputType.number,
                           validator: (value) {
@@ -188,7 +193,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   CustomTextField(
                     controller: _passwordController,
-                    labelText: 'Password',
+                    label: 'Password',
+                    hint: 'Enter your password',
                     prefixIcon: FontAwesomeIcons.lock,
                     obscureText: true,
                     validator: (value) {
@@ -206,7 +212,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   CustomTextField(
                     controller: _confirmPasswordController,
-                    labelText: 'Confirm Password',
+                    label: 'Confirm Password',
+                    hint: 'Confirm your password',
                     prefixIcon: FontAwesomeIcons.lock,
                     obscureText: true,
                     validator: (value) {
@@ -274,7 +281,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ? int.tryParse(_gradeController.text)
           : null;
 
-      context.read<AuthBloc>().add(RegisterEvent(
+      context.read<AuthBloc>().add(RegisterRequested(
             username: _usernameController.text,
             email: _emailController.text,
             password: _passwordController.text,

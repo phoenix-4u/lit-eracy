@@ -8,10 +8,6 @@ import '../../../domain/entities/achievement.dart';
 import '../../../core/error/exceptions.dart';
 
 abstract class LocalStorageDataSource {
-  Future<void> storeToken(String token);
-  Future<String?> getToken();
-  Future<void> storeRefreshToken(String refreshToken);
-  Future<String?> getRefreshToken();
   Future<void> cacheUser(User user);
   Future<User?> getCachedUser();
   Future<void> cacheLessons(List<Lesson> lessons);
@@ -19,109 +15,149 @@ abstract class LocalStorageDataSource {
   Future<void> cacheAchievements(List<Achievement> achievements);
   Future<List<Achievement>> getCachedAchievements();
   Future<void> clearAll();
+  Future<void> storeToken(String token);
+  Future<String?> getToken();
+  Future<void> storeRefreshToken(String refreshToken);
+  Future<String?> getRefreshToken();
 }
 
 class LocalStorageDataSourceImpl implements LocalStorageDataSource {
   final SharedPreferences sharedPreferences;
 
-  static const String tokenKey = 'token';
-  static const String refreshTokenKey = 'refresh_token';
-  static const String userKey = 'cached_user';
-  static const String lessonsKey = 'cached_lessons';
-  static const String achievementsKey = 'cached_achievements';
+  static const String _userKey = 'cached_user';
+  static const String _lessonsKey = 'cached_lessons';
+  static const String _achievementsKey = 'cached_achievements';
+  static const String _tokenKey = 'auth_token';
+  static const String _refreshTokenKey = 'refresh_token';
 
   LocalStorageDataSourceImpl(this.sharedPreferences);
 
   @override
-  Future<void> storeToken(String token) async {
-    await sharedPreferences.setString(tokenKey, token);
-  }
-
-  @override
-  Future<String?> getToken() async {
-    return sharedPreferences.getString(tokenKey);
-  }
-
-  @override
-  Future<void> storeRefreshToken(String refreshToken) async {
-    await sharedPreferences.setString(refreshTokenKey, refreshToken);
-  }
-
-  @override
-  Future<String?> getRefreshToken() async {
-    return sharedPreferences.getString(refreshTokenKey);
-  }
-
-  @override
   Future<void> cacheUser(User user) async {
-    final userJson = json.encode(user.toJson());
-    await sharedPreferences.setString(userKey, userJson);
+    try {
+      await sharedPreferences.setString(_userKey, json.encode(user.toJson()));
+    } catch (e) {
+      throw CacheException('Failed to cache user data');
+    }
   }
 
   @override
   Future<User?> getCachedUser() async {
-    final userJsonString = sharedPreferences.getString(userKey);
-    if (userJsonString != null) {
-      try {
-        final userJson = json.decode(userJsonString);
-        return User.fromJson(userJson);
-      } catch (e) {
-        throw const CacheException('Failed to parse cached user');
+    try {
+      final userString = sharedPreferences.getString(_userKey);
+      if (userString != null) {
+        final userMap = json.decode(userString) as Map<String, dynamic>;
+        return User.fromJson(userMap);
       }
+      return null;
+    } catch (e) {
+      throw CacheException('Failed to get cached user data');
     }
-    return null;
   }
 
   @override
   Future<void> cacheLessons(List<Lesson> lessons) async {
-    final lessonsJson =
-        json.encode(lessons.map((lesson) => lesson.toJson()).toList());
-    await sharedPreferences.setString(lessonsKey, lessonsJson);
+    try {
+      final lessonsJson = lessons.map((lesson) => lesson.toJson()).toList();
+      await sharedPreferences.setString(_lessonsKey, json.encode(lessonsJson));
+    } catch (e) {
+      throw CacheException('Failed to cache lessons');
+    }
   }
 
   @override
   Future<List<Lesson>> getCachedLessons() async {
-    final lessonsJsonString = sharedPreferences.getString(lessonsKey);
-    if (lessonsJsonString != null) {
-      try {
-        final lessonsJson = json.decode(lessonsJsonString) as List;
-        return lessonsJson.map((json) => Lesson.fromJson(json)).toList();
-      } catch (e) {
-        throw const CacheException('Failed to parse cached lessons');
+    try {
+      final lessonsString = sharedPreferences.getString(_lessonsKey);
+      if (lessonsString != null) {
+        final lessonsList = json.decode(lessonsString) as List<dynamic>;
+        return lessonsList
+            .map((lessonMap) =>
+                Lesson.fromJson(lessonMap as Map<String, dynamic>))
+            .toList();
       }
+      return [];
+    } catch (e) {
+      throw CacheException('Failed to get cached lessons');
     }
-    throw const CacheException('No cached lessons found');
   }
 
   @override
   Future<void> cacheAchievements(List<Achievement> achievements) async {
-    final achievementsJson = json.encode(
-        achievements.map((achievement) => achievement.toJson()).toList());
-    await sharedPreferences.setString(achievementsKey, achievementsJson);
+    try {
+      final achievementsJson =
+          achievements.map((achievement) => achievement.toJson()).toList();
+      await sharedPreferences.setString(
+          _achievementsKey, json.encode(achievementsJson));
+    } catch (e) {
+      throw CacheException('Failed to cache achievements');
+    }
   }
 
   @override
   Future<List<Achievement>> getCachedAchievements() async {
-    final achievementsJsonString = sharedPreferences.getString(achievementsKey);
-    if (achievementsJsonString != null) {
-      try {
-        final achievementsJson = json.decode(achievementsJsonString) as List;
-        return achievementsJson
-            .map((json) => Achievement.fromJson(json))
+    try {
+      final achievementsString = sharedPreferences.getString(_achievementsKey);
+      if (achievementsString != null) {
+        final achievementsList =
+            json.decode(achievementsString) as List<dynamic>;
+        return achievementsList
+            .map((achievementMap) =>
+                Achievement.fromJson(achievementMap as Map<String, dynamic>))
             .toList();
-      } catch (e) {
-        throw const CacheException('Failed to parse cached achievements');
       }
+      return [];
+    } catch (e) {
+      throw CacheException('Failed to get cached achievements');
     }
-    throw const CacheException('No cached achievements found');
   }
 
   @override
   Future<void> clearAll() async {
-    await sharedPreferences.remove(tokenKey);
-    await sharedPreferences.remove(refreshTokenKey);
-    await sharedPreferences.remove(userKey);
-    await sharedPreferences.remove(lessonsKey);
-    await sharedPreferences.remove(achievementsKey);
+    try {
+      await sharedPreferences.remove(_userKey);
+      await sharedPreferences.remove(_lessonsKey);
+      await sharedPreferences.remove(_achievementsKey);
+      await sharedPreferences.remove(_tokenKey);
+      await sharedPreferences.remove(_refreshTokenKey);
+    } catch (e) {
+      throw CacheException('Failed to clear cache');
+    }
+  }
+
+  @override
+  Future<void> storeToken(String token) async {
+    try {
+      await sharedPreferences.setString(_tokenKey, token);
+    } catch (e) {
+      throw CacheException('Failed to store token');
+    }
+  }
+
+  @override
+  Future<String?> getToken() async {
+    try {
+      return sharedPreferences.getString(_tokenKey);
+    } catch (e) {
+      throw CacheException('Failed to get token');
+    }
+  }
+
+  @override
+  Future<void> storeRefreshToken(String refreshToken) async {
+    try {
+      await sharedPreferences.setString(_refreshTokenKey, refreshToken);
+    } catch (e) {
+      throw CacheException('Failed to store refresh token');
+    }
+  }
+
+  @override
+  Future<String?> getRefreshToken() async {
+    try {
+      return sharedPreferences.getString(_refreshTokenKey);
+    } catch (e) {
+      throw CacheException('Failed to get refresh token');
+    }
   }
 }

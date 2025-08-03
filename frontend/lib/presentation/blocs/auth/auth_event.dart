@@ -1,48 +1,33 @@
 // # File: frontend/lib/presentation/blocs/auth/auth_event.dart
 
-part of 'auth_bloc.dart';
+import 'package:equatable/equatable.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
 
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }
 
-class AuthInitialEvent extends AuthEvent {}
-
 class LoginRequested extends AuthEvent {
-  final String username;
+  final String email;
   final String password;
 
-  const LoginRequested({
-    required this.username,
-    required this.password,
-  });
+  const LoginRequested({required this.email, required this.password});
 
   @override
-  List<Object> get props => [username, password];
+  List<Object> get props => [email, password];
 }
 
 class RegisterRequested extends AuthEvent {
-  final String username;
-  final String email;
-  final String password;
-  final String fullName;
-  final int? age;
-  final int? grade;
+  final Map<String, dynamic> userData;
 
-  const RegisterRequested({
-    required this.username,
-    required this.email,
-    required this.password,
-    required this.fullName,
-    this.age,
-    this.grade,
-  });
+  const RegisterRequested({required this.userData});
 
   @override
-  List<Object?> get props => [username, email, password, fullName, age, grade];
+  List<Object> get props => [userData];
 }
 
 class LogoutRequested extends AuthEvent {}
+
+class AuthCheckRequested extends AuthEvent {}

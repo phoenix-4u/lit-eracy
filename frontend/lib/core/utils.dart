@@ -1,17 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-class NetworkUtils {
-  static Future<bool> isOnline() async {
-    final conn = await Connectivity().checkConnectivity();
-    return !conn.contains(ConnectivityResult.none);
-  }
-}
-
-class UIUtils {
-  static void showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+class NetworkInfo {
+  static Future<bool> isConnected() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
   }
 }

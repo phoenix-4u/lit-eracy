@@ -1,12 +1,10 @@
 // # File: frontend/lib/domain/usecases/user/get_user_profile_usecase.dart
 
 import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
-
-import '../../../core/error/failures.dart';
-import '../../../core/usecases/usecase.dart';
 import '../../entities/user.dart';
 import '../../repositories/user_repository.dart';
+import '../../../core/error/failures.dart';
+import '../../../core/usecases/usecase.dart';
 
 class GetUserProfileUseCase implements UseCase<User, GetUserProfileParams> {
   final UserRepository repository;
@@ -19,11 +17,8 @@ class GetUserProfileUseCase implements UseCase<User, GetUserProfileParams> {
   }
 }
 
-class GetUserProfileParams extends Equatable {
-  final int userId;
+class GetUserProfileParams {
+  final String userId;
 
-  const GetUserProfileParams({required this.userId});
-
-  @override
-  List<Object> get props => [userId];
+  GetUserProfileParams({required this.userId});
 }

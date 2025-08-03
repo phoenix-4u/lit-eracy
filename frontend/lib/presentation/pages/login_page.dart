@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lit_eracy/presentation/blocs/auth_bloc.dart';
-import 'package:lit_eracy/presentation/pages/home_page.dart';
+import 'package:ai_literacy_app/presentation/blocs/auth_bloc.dart';
+import 'package:ai_literacy_app/presentation/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

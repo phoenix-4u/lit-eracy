@@ -1,30 +1,23 @@
 // # File: frontend/lib/presentation/blocs/content/content_event.dart
 
-part of 'content_bloc.dart';
+import 'package:equatable/equatable.dart';
 
 abstract class ContentEvent extends Equatable {
   const ContentEvent();
 
   @override
-  List<Object?> get props => [];
-}
-
-class LoadContent extends ContentEvent {
-  final String? subject;
-  final int? gradeLevel;
-
-  const LoadContent({this.subject, this.gradeLevel});
-
-  @override
-  List<Object?> get props => [subject, gradeLevel];
+  List<Object> get props => [];
 }
 
 class LoadLessons extends ContentEvent {
-  final String? subject;
-  final int? gradeLevel;
+  final int? grade;
 
-  const LoadLessons({this.subject, this.gradeLevel});
+  const LoadLessons({this.grade});
 
   @override
-  List<Object?> get props => [subject, gradeLevel];
+  List<Object> get props => [grade ?? 0];
 }
+
+class LoadContent extends ContentEvent {}
+
+class RefreshContent extends ContentEvent {}

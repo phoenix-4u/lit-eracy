@@ -3,7 +3,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import 'package:lit_eracy/domain/usecases/login_usecase.dart';
+import 'package:ai_literacy_app/domain/usecases/login_usecase.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -16,10 +16,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLoginEvent(LoginEvent event, Emitter<AuthState> emit) async {
-    final result = await loginUseCase.execute(event.email, event.password);
-    result.fold(
-      (failure) => emit(AuthFailure(error: failure.message)),
-      (user) => emit(AuthSuccess(token: user.accessToken)),
+    final failureOrUser = await loginUseCase(LoginParams(username: event.username, password: event.password));
+    failureOrUser.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) => emit(AuthAuthenticated(user: user)),
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lit_eracy/domain/models/lesson.dart';
+import 'package:ai_literacy_app/domain/models/lesson.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

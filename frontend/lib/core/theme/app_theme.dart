@@ -33,6 +33,15 @@ class AppTheme {
   static const Color warningOrange = Color(0xFFED8936);
   static const Color errorRed = Color(0xFFF56565);
 
+  // Static getters for backward compatibility
+  static Color get primaryColor => primaryBlue;
+  static Color get secondaryColor => primaryPurple;
+  static Color get backgroundColor => lightBackground;
+  static Color get textColor => primaryText;
+  static Color get successColor => successGreen;
+  static Color get warningColor => warningOrange;
+  static Color get errorColor => errorRed;
+
   // Gradient Colors
   static const List<Color> primaryGradient = [
     Color(0xFF667eea),
@@ -63,12 +72,10 @@ class AppTheme {
         secondary: primaryPurple,
         tertiary: primaryOrange,
         surface: cardBackground,
-        background: lightBackground,
         error: errorRed,
         onPrimary: lightText,
         onSecondary: lightText,
         onSurface: primaryText,
-        onBackground: primaryText,
         onError: lightText,
       ),
 
@@ -90,7 +97,7 @@ class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 4,
         shadowColor: Colors.black.withOpacity(0.1),
@@ -320,12 +327,10 @@ class AppTheme {
         secondary: primaryPurple,
         tertiary: primaryOrange,
         surface: Color(0xFF1E1E2E),
-        background: darkBackground,
         error: errorRed,
         onPrimary: lightText,
         onSecondary: lightText,
         onSurface: lightText,
-        onBackground: lightText,
         onError: lightText,
       ),
       textTheme: TextTheme(
