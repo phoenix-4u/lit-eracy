@@ -2,12 +2,13 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from datetime import timedelta
 from typing import Optional
 
-from ..database import get_db
-from ..models import User, UserRole, UserPoints
+from ..database import get_async_db
+from ..models import User, UserPoints
 from ..schemas import Token, UserCreate, UserResponse, UserLogin
 from ..core.config import settings
 from ..core.security import verify_password, get_password_hash, create_access_token
@@ -17,7 +18,7 @@ router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/token")
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -32,7 +33,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     except JWTError:
         raise credentials_exception
     
-    user = db.query(User).filter(User.username == username).first()
+    result = await db.execute(select(User).where(User.username == username))
+    user = result.scalar_one_or_none()
     if user is None:
         raise credentials_exception
     return user
@@ -42,8 +44,9 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-def authenticate_user(db: Session, username: str, password: str):
-    user = db.query(User).filter(User.username == username).first()
+async def authenticate_user(db: AsyncSession, username: str, password: str):
+    result = await db.execute(select(User).where(User.username == username))
+    user = result.scalar_one_or_none()
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -51,13 +54,16 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 @router.post("/register", response_model=UserResponse)
-async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+async def register(user_data: UserCreate, db: AsyncSession = Depends(get_async_db)):
     # Check if user already exists
-    db_user = db.query(User).filter(
-        (User.username == user_data.username) | (User.email == user_data.email)
-    ).first()
+    result = await db.execute(
+        select(User).where(
+            (User.username == user_data.username) | (User.email == user_data.email)
+        )
+    )
+    existing_user = result.scalar_one_or_none()
     
-    if db_user:
+    if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username or email already registered"
@@ -79,22 +85,22 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     )
     
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     
     # Initialize user points
     user_points = UserPoints(user_id=db_user.id)
     db.add(user_points)
-    db.commit()
+    await db.commit()
     
     return UserResponse.model_validate(db_user)
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
-    user = authenticate_user(db, form_data.username, form_data.password)
+    user = await authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -114,8 +120,8 @@ async def login_for_access_token(
     }
 
 @router.post("/login", response_model=Token)
-async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
-    user = authenticate_user(db, user_credentials.username, user_credentials.password)
+async def login(user_credentials: UserLogin, db: AsyncSession = Depends(get_async_db)):
+    user = await authenticate_user(db, user_credentials.username, user_credentials.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

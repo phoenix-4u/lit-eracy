@@ -3,8 +3,8 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 import uvicorn
 import os
 from datetime import datetime, timedelta
@@ -12,19 +12,19 @@ from typing import Optional
 import redis
 from contextlib import asynccontextmanager
 
-from .database import engine, get_db
-from .models import Base
+from .database import init_db, close_db, get_async_db
+from .models import User, UserPoints
 from .routers import auth
 from .core.config import settings
 from .core.security import create_access_token
 from .services.ai_service import AIService
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    # Initialize database
+    await init_db()
+    
     # Initialize AI service
     ai_service = AIService()
     app.state.ai_service = ai_service
@@ -47,6 +47,7 @@ async def lifespan(app: FastAPI):
     # Shutdown
     if hasattr(app.state, 'redis_client') and app.state.redis_client:
         app.state.redis_client.close()
+    await close_db()
 
 app = FastAPI(
     title="AI Literacy App API",
@@ -72,7 +73,8 @@ async def root():
     return {
         "message": "Welcome to AI Literacy App API",
         "version": "1.0.0",
-        "status": "active"
+        "status": "active",
+        "database": "SQLite"
     }
 
 @app.get("/health")
@@ -80,31 +82,48 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "database": "connected",
+        "database": "SQLite - connected",
         "ai_service": "active"
     }
 
-# Mock endpoint for dashboard data
+# Mock endpoint for dashboard data with SQLite
 @app.get("/api/dashboard/student/{user_id}")
-async def get_student_dashboard(user_id: int, db: Session = Depends(get_db)):
-    # Mock dashboard data for testing
+async def get_student_dashboard(user_id: int, db: AsyncSession = Depends(get_async_db)):
+    # Get user from database
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user points
+    points_result = await db.execute(select(UserPoints).where(UserPoints.user_id == user_id))
+    points = points_result.scalar_one_or_none()
+    
+    if not points:
+        # Create default points if they don't exist
+        points = UserPoints(user_id=user_id)
+        db.add(points)
+        await db.commit()
+        await db.refresh(points)
+    
     return {
         "user": {
-            "id": user_id,
-            "username": "student1",
-            "full_name": "Alex Johnson",
-            "age": 8,
-            "grade": 2,
-            "avatar_url": None
+            "id": user.id,
+            "username": user.username,
+            "full_name": user.full_name,
+            "age": user.age,
+            "grade": user.grade,
+            "avatar_url": user.avatar_url
         },
         "points": {
-            "knowledge_gems": 150,
-            "word_coins": 75,
-            "imagination_sparks": 30,
-            "total_points": 255,
-            "current_streak": 5,
-            "longest_streak": 12,
-            "last_activity_date": "2024-01-15T10:30:00Z"
+            "knowledge_gems": points.knowledge_gems,
+            "word_coins": points.word_coins,
+            "imagination_sparks": points.imagination_sparks,
+            "total_points": points.total_points,
+            "current_streak": points.current_streak,
+            "longest_streak": points.longest_streak,
+            "last_activity_date": points.last_activity_date.isoformat() if points.last_activity_date else None
         },
         "recent_achievements": [
             {
@@ -120,11 +139,71 @@ async def get_student_dashboard(user_id: int, db: Session = Depends(get_db)):
                 "id": 1,
                 "title": "Fun with Numbers",
                 "subject": "Math",
-                "grade_level": 2,
+                "grade_level": user.grade or 1,
                 "points_reward": 15,
                 "estimated_duration": 10
+            },
+            {
+                "id": 2,
+                "title": "Letter Adventures",
+                "subject": "English",
+                "grade_level": user.grade or 1,
+                "points_reward": 10,
+                "estimated_duration": 8
             }
-        ]
+        ],
+        "in_progress_content": []
+    }
+
+# Content endpoints
+@app.get("/api/content/lessons")
+async def get_lessons(grade_level: Optional[int] = None, subject: Optional[str] = None):
+    """Get available lessons"""
+    # Mock data - in real implementation, query from database
+    lessons = [
+        {
+            "id": 1,
+            "title": "Numbers 1-10",
+            "subject": "Math",
+            "grade_level": 1,
+            "difficulty_level": 1,
+            "points_reward": 10,
+            "estimated_duration": 5
+        },
+        {
+            "id": 2,
+            "title": "Alphabet Fun",
+            "subject": "English",
+            "grade_level": 1,
+            "difficulty_level": 1,
+            "points_reward": 10,
+            "estimated_duration": 8
+        }
+    ]
+    
+    # Filter by grade level and subject if provided
+    if grade_level:
+        lessons = [l for l in lessons if l["grade_level"] == grade_level]
+    if subject:
+        lessons = [l for l in lessons if l["subject"].lower() == subject.lower()]
+    
+    return lessons
+
+@app.post("/api/progress/update")
+async def update_progress(
+    content_id: int,
+    completion_percentage: float,
+    time_spent: int,
+    current_user = Depends(auth.get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Update user progress for content"""
+    # In real implementation, update UserProgress table
+    return {
+        "message": "Progress updated successfully",
+        "content_id": content_id,
+        "completion_percentage": completion_percentage,
+        "time_spent": time_spent
     }
 
 if __name__ == "__main__":
