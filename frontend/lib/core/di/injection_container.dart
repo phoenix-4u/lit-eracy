@@ -1,15 +1,36 @@
 // # File: frontend/lib/core/di/injection_container.dart
 
-import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
-// BLoCs
-import '../../presentation/blocs/auth/auth_bloc.dart';
-import '../../presentation/blocs/user/user_bloc.dart';
-import '../../presentation/blocs/content/content_bloc.dart';
-import '../../presentation/blocs/progress/progress_bloc.dart';
-import '../../presentation/blocs/achievements/achievements_bloc.dart';
+// Core Services
+import '../services/api_service.dart';
+import '../services/storage_service.dart';
+import '../services/gamification_service.dart';
+import '../services/token_storage.dart';
+import '../error/failures.dart';
+
+// Data Layer
+import '../../data/datasources/remote/auth_remote_datasource.dart';
+import '../../data/datasources/remote/user_remote_datasource.dart';
+import '../../data/datasources/remote/content_remote_datasource.dart';
+import '../../data/datasources/local/local_storage_datasource.dart';
+
+// Repository Implementations
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/repositories/user_repository_impl.dart';
+import '../../data/repositories/content_repository_impl.dart';
+import '../../data/repositories/progress_repository_impl.dart';
+import '../../data/repositories/achievements_repository_impl.dart';
+
+// Domain Repositories
+import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../../domain/repositories/content_repository.dart';
+import '../../domain/repositories/progress_repository.dart';
+import '../../domain/repositories/achievements_repository.dart';
 
 // Use Cases
 import '../../domain/usecases/auth/login_usecase.dart';
@@ -19,102 +40,82 @@ import '../../domain/usecases/content/get_lessons_usecase.dart';
 import '../../domain/usecases/progress/update_progress_usecase.dart';
 import '../../domain/usecases/achievements/get_achievements_usecase.dart';
 
-// Repositories
-import '../../domain/repositories/auth_repository.dart';
-import '../../domain/repositories/user_repository.dart';
-import '../../domain/repositories/content_repository.dart';
-import '../../domain/repositories/progress_repository.dart';
-import '../../domain/repositories/achievements_repository.dart';
-
-// Repository Implementations
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/repositories/user_repository_impl.dart';
-import '../../data/repositories/content_repository_impl.dart';
-import '../../data/repositories/progress_repository_impl.dart';
-import '../../data/repositories/achievements_repository_impl.dart';
-
-// Data Sources
-import '../../data/datasources/remote/auth_remote_datasource.dart';
-import '../../data/datasources/remote/user_remote_datasource.dart';
-import '../../data/datasources/remote/content_remote_datasource.dart';
-import '../../data/datasources/local/local_storage_datasource.dart';
-
-// Services
-import '../services/api_service.dart';
-import '../services/storage_service.dart';
-import '../services/gamification_service.dart';
+// BLoCs
+import '../../presentation/blocs/auth/auth_bloc.dart';
+import '../../presentation/blocs/user/user_bloc.dart';
+import '../../presentation/blocs/content/content_bloc.dart';
+import '../../presentation/blocs/progress/progress_bloc.dart';
+import '../../presentation/blocs/achievements/achievements_bloc.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  // External
+  // External Dependencies
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => http.Client());
+  sl.registerLazySingleton(() => Connectivity());
 
-  sl.registerLazySingleton(() => Dio());
-
-  // Services
-  sl.registerLazySingleton<ApiService>(() => ApiService());
-  sl.registerLazySingleton<StorageService>(() => StorageService());
-  sl.registerLazySingleton<GamificationService>(() => GamificationService());
+  // Core Services
+  sl.registerLazySingleton<TokenStorage>(() => TokenStorageImpl(sl()));
+  sl.registerLazySingleton<StorageService>(() => StorageServiceImpl(sl()));
+  sl.registerLazySingleton<ApiService>(() => ApiServiceImpl(
+        client: sl(),
+        tokenStorage: sl(),
+        connectivity: sl(),
+      ));
+  sl.registerLazySingleton<GamificationService>(() => GamificationServiceImpl(
+        storageService: sl(),
+      ));
 
   // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(sl<ApiService>().dio),
-  );
-
+      () => AuthRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<UserRemoteDataSource>(
-    () => UserRemoteDataSourceImpl(sl<ApiService>().dio),
-  );
-
+      () => UserRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<ContentRemoteDataSource>(
-    () => ContentRemoteDataSourceImpl(sl<ApiService>().dio),
-  );
-
+      () => ContentRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<LocalStorageDataSource>(
-    () => LocalStorageDataSourceImpl(sl<SharedPreferences>()),
-  );
+      () => LocalStorageDataSourceImpl(sl()));
 
   // Repositories
-  sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-        sl<AuthRemoteDataSource>(), sl<LocalStorageDataSource>()),
-  );
-
-  sl.registerLazySingleton<UserRepository>(
-    () => UserRepositoryImpl(
-        sl<UserRemoteDataSource>(), sl<LocalStorageDataSource>()),
-  );
-
-  sl.registerLazySingleton<ContentRepository>(
-    () => ContentRepositoryImpl(
-        sl<ContentRemoteDataSource>(), sl<LocalStorageDataSource>()),
-  );
-
-  sl.registerLazySingleton<ProgressRepository>(
-    () => ProgressRepositoryImpl(
-        sl<ContentRemoteDataSource>(), sl<LocalStorageDataSource>()),
-  );
-
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
+        remoteDataSource: sl(),
+        localDataSource: sl(),
+      ));
+  sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(
+        remoteDataSource: sl(),
+        localDataSource: sl(),
+      ));
+  sl.registerLazySingleton<ContentRepository>(() => ContentRepositoryImpl(
+        remoteDataSource: sl(),
+        localDataSource: sl(),
+      ));
+  sl.registerLazySingleton<ProgressRepository>(() => ProgressRepositoryImpl(
+        remoteDataSource: sl(),
+        localDataSource: sl(),
+      ));
   sl.registerLazySingleton<AchievementsRepository>(
-    () => AchievementsRepositoryImpl(
-        sl<ContentRemoteDataSource>(), sl<LocalStorageDataSource>()),
-  );
+      () => AchievementsRepositoryImpl(
+            remoteDataSource: sl(),
+            localDataSource: sl(),
+          ));
 
   // Use Cases
-  sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
-  sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
-  sl.registerLazySingleton(() => GetUserProfileUseCase(sl<UserRepository>()));
-  sl.registerLazySingleton(() => GetLessonsUseCase(sl<ContentRepository>()));
-  sl.registerLazySingleton(
-      () => UpdateProgressUseCase(sl<ProgressRepository>()));
-  sl.registerLazySingleton(
-      () => GetAchievementsUseCase(sl<AchievementsRepository>()));
+  sl.registerLazySingleton(() => LoginUseCase(sl()));
+  sl.registerLazySingleton(() => RegisterUseCase(sl()));
+  sl.registerLazySingleton(() => GetUserProfileUseCase(sl()));
+  sl.registerLazySingleton(() => GetLessonsUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateProgressUseCase(sl()));
+  sl.registerLazySingleton(() => GetAchievementsUseCase(sl()));
 
   // BLoCs
-  sl.registerFactory(() => AuthBloc(sl<LoginUseCase>(), sl<RegisterUseCase>()));
-  sl.registerFactory(() => UserBloc(sl<GetUserProfileUseCase>()));
-  sl.registerFactory(() => ContentBloc(sl<GetLessonsUseCase>()));
-  sl.registerFactory(() => ProgressBloc(sl<UpdateProgressUseCase>()));
-  sl.registerFactory(() => AchievementsBloc(sl<GetAchievementsUseCase>()));
+  sl.registerFactory(() => AuthBloc(
+        loginUseCase: sl(),
+        registerUseCase: sl(),
+      ));
+  sl.registerFactory(() => UserBloc(sl()));
+  sl.registerFactory(() => ContentBloc(sl()));
+  sl.registerFactory(() => ProgressBloc(sl()));
+  sl.registerFactory(() => AchievementsBloc(sl()));
 }

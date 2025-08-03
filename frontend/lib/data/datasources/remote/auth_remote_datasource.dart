@@ -1,49 +1,117 @@
 // # File: frontend/lib/data/datasources/remote/auth_remote_datasource.dart
 
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../../../config/api_config.dart';
+import '../../../core/error/exceptions.dart';
 import '../../../domain/entities/user.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<User> login(String username, String password);
-  Future<User> register(String username, String email, String password,
-      String fullName, int? age, int? grade);
+  Future<Map<String, dynamic>> login(String email, String password);
+  Future<Map<String, dynamic>> register(Map<String, dynamic> userData);
+  Future<void> logout(String token);
+  Future<Map<String, dynamic>> refreshToken(String refreshToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final Dio dio;
+  final http.Client client;
 
-  AuthRemoteDataSourceImpl(this.dio);
+  AuthRemoteDataSourceImpl(this.client);
 
   @override
-  Future<User> login(String username, String password) async {
-    final response = await dio.post('/api/auth/login', data: {
-      'username': username,
-      'password': password,
-    });
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    try {
+      final response = await client.post(
+        Uri.parse(ApiConfig.loginEndpoint),
+        headers: ApiConfig.defaultHeaders,
+        body: json.encode({
+          'email': email,
+          'password': password,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      return User.fromJson(response.data['user']);
-    } else {
-      throw Exception('Login failed');
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else if (response.statusCode == 401) {
+        throw AuthenticationException('Invalid credentials');
+      } else {
+        throw ServerException('Login failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is AuthenticationException || e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error during login');
     }
   }
 
   @override
-  Future<User> register(String username, String email, String password,
-      String fullName, int? age, int? grade) async {
-    final response = await dio.post('/api/auth/register', data: {
-      'username': username,
-      'email': email,
-      'password': password,
-      'full_name': fullName,
-      'age': age,
-      'grade': grade,
-    });
+  Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
+    try {
+      final response = await client.post(
+        Uri.parse(ApiConfig.registerEndpoint),
+        headers: ApiConfig.defaultHeaders,
+        body: json.encode(userData),
+      );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return User.fromJson(response.data);
-    } else {
-      throw Exception('Registration failed');
+      if (response.statusCode == 201) {
+        return json.decode(response.body);
+      } else if (response.statusCode == 400) {
+        final errorData = json.decode(response.body);
+        throw ValidationException(
+            errorData['message'] ?? 'Registration failed');
+      } else {
+        throw ServerException('Registration failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ValidationException || e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error during registration');
+    }
+  }
+
+  @override
+  Future<void> logout(String token) async {
+    try {
+      final response = await client.post(
+        Uri.parse(ApiConfig.logoutEndpoint),
+        headers: ApiConfig.authHeaders(token),
+      );
+
+      if (response.statusCode != 200) {
+        throw ServerException('Logout failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error during logout');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
+    try {
+      final response = await client.post(
+        Uri.parse(ApiConfig.refreshTokenEndpoint),
+        headers: ApiConfig.defaultHeaders,
+        body: json.encode({
+          'refresh_token': refreshToken,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw AuthenticationException('Token refresh failed');
+      }
+    } catch (e) {
+      if (e is AuthenticationException) {
+        rethrow;
+      }
+      throw NetworkException('Network error during token refresh');
     }
   }
 }
