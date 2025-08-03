@@ -2,18 +2,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../domain/entities/achievement.dart';
 import '../../core/theme/app_theme.dart';
 
 class AchievementBadge extends StatefulWidget {
-  final dynamic achievement;
+  final Achievement achievement;
   final VoidCallback? onTap;
-  final bool isLocked;
+  final bool showDetails;
 
   const AchievementBadge({
     Key? key,
     required this.achievement,
     this.onTap,
-    this.isLocked = false,
+    this.showDetails = true,
   }) : super(key: key);
 
   @override
@@ -22,42 +23,40 @@ class AchievementBadge extends StatefulWidget {
 
 class _AchievementBadgeState extends State<AchievementBadge>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _glowAnimation;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.elasticOut,
+      ),
+    );
 
-    _glowAnimation = Tween<double>(
-      begin: 0.5,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
-    if (!widget.isLocked) {
-      _controller.repeat(reverse: true);
+    if (widget.achievement.isUnlocked) {
+      _animationController.forward();
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -65,135 +64,238 @@ class _AchievementBadgeState extends State<AchievementBadge>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: widget.isLocked ? 1.0 : _pulseAnimation.value,
-            child: Container(
-              width: 100,
-              height: 120,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: widget.isLocked
-                    ? LinearGradient(
-                        colors: [
-                          Colors.grey.shade300,
-                          Colors.grey.shade400,
-                        ],
-                      )
-                    : LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppTheme.achievementGold,
-                          AppTheme.achievementGold.withOpacity(0.8),
-                        ],
-                      ),
-                boxShadow: widget.isLocked
-                    ? []
-                    : [
-                        BoxShadow(
-                          color: AppTheme.achievementGold
-                              .withOpacity(0.4 * _glowAnimation.value),
-                          blurRadius: 15,
-                          spreadRadius: 2,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Badge Icon
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: widget.isLocked
-                            ? Colors.grey.shade500
-                            : Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: widget.isLocked
-                            ? []
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                      ),
-                      child: Icon(
-                        widget.isLocked
-                            ? FontAwesomeIcons.lock
-                            : _getAchievementIcon(
-                                widget.achievement?.name ?? ''),
-                        color: widget.isLocked
-                            ? Colors.white
-                            : AppTheme.achievementGold,
-                        size: 24,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Achievement Name
-                    Text(
-                      widget.isLocked
-                          ? 'Locked'
-                          : widget.achievement?.name ?? 'Achievement',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    if (!widget.isLocked) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'Earned!',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 10,
-                            ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          gradient: widget.achievement.isUnlocked
+              ? _getUnlockedGradient()
+              : _getLockedGradient(),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: widget.achievement.isUnlocked
+                ? _getRarityColor().withValues(alpha: 0.5)
+                : Colors.grey.withValues(alpha: 0.3),
+            width: 2,
+          ),
+          boxShadow: widget.achievement.isUnlocked
+              ? [
+                  BoxShadow(
+                    color: _getRarityColor().withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildBadgeIcon(),
+            if (widget.showDetails) ...[
+              const SizedBox(height: 12),
+              _buildBadgeDetails(),
+            ],
+          ],
+        ),
       ),
     );
   }
 
-  IconData _getAchievementIcon(String achievementName) {
-    switch (achievementName.toLowerCase()) {
-      case 'first steps':
-      case 'first lesson':
-        return FontAwesomeIcons.babyCarriage;
-      case 'streak champion':
-      case 'week streak':
-        return FontAwesomeIcons.fire;
-      case 'quiz master':
-        return FontAwesomeIcons.brain;
-      case 'story reader':
-        return FontAwesomeIcons.book;
-      case 'ai friend':
-        return FontAwesomeIcons.robot;
-      case 'math wizard':
-        return FontAwesomeIcons.calculator;
-      case 'word master':
-        return FontAwesomeIcons.spell_check;
+  Widget _buildBadgeIcon() {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Transform.rotate(
+            angle: _rotationAnimation.value * 0.1,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: widget.achievement.isUnlocked
+                    ? RadialGradient(
+                        colors: [
+                          _getRarityColor(),
+                          _getRarityColor().withValues(alpha: 0.7),
+                        ],
+                      )
+                    : RadialGradient(
+                        colors: [
+                          Colors.grey.withValues(alpha: 0.3),
+                          Colors.grey.withValues(alpha: 0.1),
+                        ],
+                      ),
+                border: Border.all(
+                  color: widget.achievement.isUnlocked
+                      ? _getRarityColor()
+                      : Colors.grey,
+                  width: 3,
+                ),
+                boxShadow: widget.achievement.isUnlocked
+                    ? [
+                        BoxShadow(
+                          color: _getRarityColor().withValues(alpha: 0.4),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Center(
+                child: FaIcon(
+                  _getIconData(),
+                  size: 40,
+                  color: widget.achievement.isUnlocked
+                      ? Colors.white
+                      : Colors.grey,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBadgeDetails() {
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        Text(
+          widget.achievement.title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: widget.achievement.isUnlocked
+                ? AppTheme.textColor
+                : Colors.grey,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          widget.achievement.description,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: widget.achievement.isUnlocked
+                ? AppTheme.textColor.withValues(alpha: 0.8)
+                : Colors.grey.withValues(alpha: 0.6),
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: _getRarityColor().withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _getRarityColor().withValues(alpha: 0.5),
+            ),
+          ),
+          child: Text(
+            '${widget.achievement.pointsRequired} pts',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _getRarityColor(),
+            ),
+          ),
+        ),
+        if (widget.achievement.isUnlocked &&
+            widget.achievement.unlockedAt != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Unlocked ${_formatDate(widget.achievement.unlockedAt!)}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey,
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  LinearGradient _getUnlockedGradient() {
+    final color = _getRarityColor();
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        color.withValues(alpha: 0.1),
+        color.withValues(alpha: 0.05),
+      ],
+    );
+  }
+
+  LinearGradient _getLockedGradient() {
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        Colors.grey.withValues(alpha: 0.1),
+        Colors.grey.withValues(alpha: 0.05),
+      ],
+    );
+  }
+
+  Color _getRarityColor() {
+    switch (widget.achievement.rarity.toLowerCase()) {
+      case 'bronze':
+        return const Color(0xFFCD7F32);
+      case 'silver':
+        return const Color(0xFFC0C0C0);
+      case 'gold':
+        return const Color(0xFFFFD700);
+      case 'platinum':
+        return const Color(0xFFE5E4E2);
       default:
+        return AppTheme.primaryColor;
+    }
+  }
+
+  IconData _getIconData() {
+    switch (widget.achievement.iconName.toLowerCase()) {
+      case 'trophy':
         return FontAwesomeIcons.trophy;
+      case 'medal':
+        return FontAwesomeIcons.medal;
+      case 'star':
+        return FontAwesomeIcons.star;
+      case 'crown':
+        return FontAwesomeIcons.crown;
+      case 'fire':
+        return FontAwesomeIcons.fire;
+      case 'book':
+        return FontAwesomeIcons.book;
+      case 'graduation':
+        return FontAwesomeIcons.graduationCap;
+      case 'target':
+        return FontAwesomeIcons.bullseye;
+      case 'lightning':
+        return FontAwesomeIcons.bolt;
+      default:
+        return FontAwesomeIcons.award;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inMinutes}m ago';
     }
   }
 }

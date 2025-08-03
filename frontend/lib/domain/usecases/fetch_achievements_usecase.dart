@@ -1,14 +1,18 @@
-import 'package:dartz/dartz.dart';
-import 'package:lit_eracy/core/errors/failures.dart';
-import 'package:lit_eracy/domain/models/achievement.dart';
-import 'package:lit_eracy/domain/repository/content_repository.dart';
+// File: frontend/lib/domain/usecases/fetch_achievements_usecase.dart
 
-class FetchAchievementsUseCase {
+import 'package:dartz/dartz.dart';
+import '../entities/achievement.dart';
+import '../repositories/content_repository.dart';
+import '../../core/error/failures.dart';
+import '../../core/usecases/usecase.dart';
+
+class FetchAchievementsUseCase implements UseCase<List<Achievement>, NoParams> {
   final ContentRepository repository;
 
   FetchAchievementsUseCase(this.repository);
 
-  Future<Either<Failure, List<Achievement>>> execute(int userId) async {
-    return await repository.fetchAchievements(userId);
+  @override
+  Future<Either<Failure, List<Achievement>>> call(NoParams params) async {
+    return await repository.getAchievements();
   }
 }

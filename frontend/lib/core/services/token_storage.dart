@@ -1,5 +1,7 @@
 // # File: frontend/lib/core/services/token_storage.dart
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 abstract class TokenStorage {
   Future<void> storeToken(String token);
   Future<String?> getToken();

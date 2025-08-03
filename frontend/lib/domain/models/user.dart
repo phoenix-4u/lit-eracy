@@ -1,3 +1,5 @@
+export '../entities/user.dart';
+
 class User {
   final String accessToken;
   final String tokenType;

@@ -1,3 +1,6 @@
+// This file provides backward compatibility for imports
+export '../entities/content.dart';
+
 class Content {
   final int grade;
   final String contentType;

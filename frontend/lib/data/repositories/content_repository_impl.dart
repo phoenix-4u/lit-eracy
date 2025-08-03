@@ -1,157 +1,113 @@
+// ## File: frontend/lib/data/repositories/content_repository_impl.dart
+
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:lit_eracy/core/errors/failures.dart';
-import 'package:lit_eracy/config/api_config.dart';
-import 'package:lit_eracy/domain/models/content.dart';
-import 'package:lit_eracy/domain/repository/content_repository.dart';
-import 'package:lit_eracy/domain/models/lesson.dart';
-import 'package:lit_eracy/domain/models/achievement.dart';
+import '../../domain/entities/lesson.dart';
+import '../../domain/entities/achievement.dart';
+import '../../domain/entities/content.dart';
+import '../../domain/repositories/content_repository.dart';
+import '../../core/error/failures.dart';
+import '../../core/error/exceptions.dart';
+import '../datasources/remote/content_remote_datasource.dart';
+import '../datasources/local/local_storage_datasource.dart';
 
 class ContentRepositoryImpl implements ContentRepository {
-  final Dio _dio = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
+  final ContentRemoteDataSource remoteDataSource;
+  final LocalStorageDataSource localDataSource;
+
+  ContentRepositoryImpl({
+    required this.remoteDataSource,
+    required this.localDataSource,
+  });
 
   @override
-  Future<Either<Failure, List<Lesson>>> fetchLessons(int grade) async {
-    // ✅ Added int parameter
+  Future<Either<Failure, List<Lesson>>> getLessons({int? grade}) async {
     try {
-      // Retrieve stored token
-      final token = await _getStoredToken();
+      final lessons = await remoteDataSource.getLessons(grade: grade);
+      final lessonEntities =
+          lessons.map((json) => Lesson.fromJson(json)).toList();
 
-      if (token == null) {
-        return Left(ServerFailure('No authentication token found'));
+      // Cache lessons locally
+      await localDataSource.cacheLessons(lessonEntities);
+
+      return Right(lessonEntities);
+    } on NetworkException {
+      // Try to get cached lessons
+      try {
+        final cachedLessons = await localDataSource.getCachedLessons();
+        return Right(cachedLessons);
+      } on CacheException catch (e) {
+        return Left(CacheFailure(e.message));
       }
-
-      final response = await _dio.get(
-        '/api/content/lessons',
-        queryParameters: {'grade': grade}, // ✅ Use the grade parameter
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
-      );
-
-      final List<Lesson> lessons =
-          (response.data as List).map((json) => Lesson.fromJson(json)).toList();
-
-      return Right(lessons);
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403) {
-        return Left(ServerFailure('Authentication failed'));
-      }
-      return Left(ServerFailure(e.message ?? 'Failed to fetch lessons'));
-    } catch (e) {
-      return Left(ServerFailure('Unexpected error: $e'));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 
   @override
-  Future<Either<Failure, List<Achievement>>> fetchAchievements(
-      int userId) async {
-    // ✅ Added int parameter
+  Future<Either<Failure, List<Achievement>>> getAchievements() async {
     try {
-      final token = await _getStoredToken();
+      final achievements = await remoteDataSource.getAchievements();
+      final achievementEntities =
+          achievements.map((json) => Achievement.fromJson(json)).toList();
 
-      if (token == null) {
-        return Left(ServerFailure('No authentication token found'));
+      // Cache achievements locally
+      await localDataSource.cacheAchievements(achievementEntities);
+
+      return Right(achievementEntities);
+    } on NetworkException {
+      // Try to get cached achievements
+      try {
+        final cachedAchievements =
+            await localDataSource.getCachedAchievements();
+        return Right(cachedAchievements);
+      } on CacheException catch (e) {
+        return Left(CacheFailure(e.message));
       }
-
-      final response = await _dio.get(
-        '/api/users/$userId/achievements', // ✅ Use the userId parameter
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
-      );
-
-      final List<Achievement> achievements = (response.data as List)
-          .map((json) => Achievement.fromJson(json))
-          .toList();
-
-      return Right(achievements);
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403) {
-        return Left(ServerFailure('Authentication failed'));
-      }
-      return Left(ServerFailure(e.message ?? 'Failed to fetch achievements'));
-    } catch (e) {
-      return Left(ServerFailure('Unexpected error: $e'));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 
-  // Keep your existing helper methods
-  Future<Either<Failure, List<Content>>> getContent({
-    int skip = 0,
-    int limit = 100,
-    String? contentType,
-    String? ageGroup,
-  }) async {
+  @override
+  Future<Either<Failure, List<Content>>> getContent() async {
     try {
-      final token = await _getStoredToken();
+      final content = await remoteDataSource.getContent();
+      final contentEntities =
+          content.map((json) => Content.fromJson(json)).toList();
 
-      if (token == null) {
-        return Left(ServerFailure('No authentication token found'));
-      }
+      return Right(contentEntities);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 
-      final response = await _dio.get(
-        '/api/content',
-        queryParameters: {
-          'skip': skip,
-          'limit': limit,
-          if (contentType != null) 'content_type': contentType,
-          if (ageGroup != null) 'age_group': ageGroup,
-        },
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
-      );
+  @override
+  Future<Either<Failure, Lesson>> getLessonById(int id) async {
+    try {
+      final lessonJson = await remoteDataSource.getLessonById(id);
+      final lesson = Lesson.fromJson(lessonJson);
 
-      final List<Content> content = (response.data as List)
-          .map((json) => Content.fromJson(json))
-          .toList();
+      return Right(lesson);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Content>> getContentById(int id) async {
+    try {
+      final contentJson = await remoteDataSource.getContentById(id);
+      final content = Content.fromJson(contentJson);
 
       return Right(content);
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403) {
-        return Left(ServerFailure('Authentication failed'));
-      }
-      return Left(ServerFailure(e.message ?? 'Failed to fetch content'));
-    } catch (e) {
-      return Left(ServerFailure('Unexpected error: $e'));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
-  }
-
-  Future<Either<Failure, Content>> getContentById(int contentId) async {
-    try {
-      final token = await _getStoredToken();
-
-      if (token == null) {
-        return Left(ServerFailure('No authentication token found'));
-      }
-
-      final response = await _dio.get(
-        '/api/content/$contentId',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
-      );
-
-      final content = Content.fromJson(response.data);
-      return Right(content);
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403) {
-        return Left(ServerFailure('Authentication failed'));
-      }
-      if (e.response?.statusCode == 404) {
-        return Left(ServerFailure('Content not found'));
-      }
-      return Left(ServerFailure(e.message ?? 'Failed to fetch content'));
-    } catch (e) {
-      return Left(ServerFailure('Unexpected error: $e'));
-    }
-  }
-
-  // Helper method to retrieve stored token
-  Future<String?> _getStoredToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('access_token');
   }
 }

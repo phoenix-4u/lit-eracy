@@ -1,66 +1,127 @@
-import 'package:dio/dio.dart';
-import 'package:lit_eracy/config/api_config.dart';
-import 'package:lit_eracy/core/services/token_storage.dart';
+//## File: frontend/lib/core/http_client.dart
+
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
+import 'services/token_storage.dart';
 
 class HttpClient {
-  static Dio? _dio;
-  static final TokenStorage _tokenStorage = TokenStorageImpl();
+  final http.Client _client;
+  final TokenStorage _tokenStorage;
 
-  static Dio get instance {
-    _dio ??= _createDio();
-    return _dio!;
+  HttpClient(this._client, this._tokenStorage);
+
+  Future<Map<String, String>> _getHeaders({bool requiresAuth = false}) async {
+    final headers = Map<String, String>.from(ApiConfig.defaultHeaders);
+
+    if (requiresAuth) {
+      final token = await _tokenStorage.getToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+
+    return headers;
   }
 
-  static Dio _createDio() {
-    final dio = Dio(BaseOptions(
-      baseUrl: ApiConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
+  Future<http.Response> get(
+    String endpoint, {
+    bool requiresAuth = false,
+    Map<String, String>? queryParameters,
+  }) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+    final uriWithQuery = queryParameters != null
+        ? uri.replace(queryParameters: queryParameters)
+        : uri;
 
-    // Add authentication interceptor
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // Skip auth for login/register endpoints
-        if (!_isAuthEndpoint(options.path)) {
-          final token = await _tokenStorage.getToken();
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-        }
-        handler.next(options);
-      },
-      onError: (error, handler) async {
-        // Handle token expiration
-        if (error.response?.statusCode == 401) {
-          await _tokenStorage.clearToken();
-          // You can add navigation to login page here
-        }
-        handler.next(error);
-      },
-    ));
+    final headers = await _getHeaders(requiresAuth: requiresAuth);
 
-    // Add logging interceptor for development
-    dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      requestHeader: true,
-      responseHeader: false,
-    ));
-
-    return dio;
+    try {
+      final response = await _client
+          .get(uriWithQuery, headers: headers)
+          .timeout(const Duration(seconds: 30));
+      return response;
+    } on SocketException {
+      throw const HttpException('No internet connection');
+    } on HttpException {
+      throw const HttpException('Network error occurred');
+    }
   }
 
-  static bool _isAuthEndpoint(String path) {
-    return path.contains('/api/auth/login') ||
-        path.contains('/api/auth/register');
+  Future<http.Response> post(
+    String endpoint, {
+    required Map<String, dynamic> body,
+    bool requiresAuth = false,
+  }) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+    final headers = await _getHeaders(requiresAuth: requiresAuth);
+
+    try {
+      final response = await _client
+          .post(
+            uri,
+            headers: headers,
+            body: json.encode(body),
+          )
+          .timeout(const Duration(seconds: 30));
+      return response;
+    } on SocketException {
+      throw const HttpException('No internet connection');
+    } on HttpException {
+      throw const HttpException('Network error occurred');
+    }
   }
 
-  static void resetInstance() {
-    _dio = null;
+  Future<http.Response> put(
+    String endpoint, {
+    required Map<String, dynamic> body,
+    bool requiresAuth = true,
+  }) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+    final headers = await _getHeaders(requiresAuth: requiresAuth);
+
+    try {
+      final response = await _client
+          .put(
+            uri,
+            headers: headers,
+            body: json.encode(body),
+          )
+          .timeout(const Duration(seconds: 30));
+      return response;
+    } on SocketException {
+      throw const HttpException('No internet connection');
+    } on HttpException {
+      throw const HttpException('Network error occurred');
+    }
   }
+
+  Future<http.Response> delete(
+    String endpoint, {
+    bool requiresAuth = true,
+  }) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+    final headers = await _getHeaders(requiresAuth: requiresAuth);
+
+    try {
+      final response = await _client
+          .delete(uri, headers: headers)
+          .timeout(const Duration(seconds: 30));
+      return response;
+    } on SocketException {
+      throw const HttpException('No internet connection');
+    } on HttpException {
+      throw const HttpException('Network error occurred');
+    }
+  }
+}
+
+class HttpException implements Exception {
+  final String message;
+
+  const HttpException(this.message);
+
+  @override
+  String toString() => 'HttpException: $message';
 }

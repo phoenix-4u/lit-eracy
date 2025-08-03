@@ -1,29 +1,19 @@
 // # File: frontend/lib/presentation/widgets/lesson_card.dart
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../domain/entities/lesson.dart';
 import '../../core/theme/app_theme.dart';
 
 class LessonCard extends StatefulWidget {
-  final String title;
-  final String subject;
-  final String duration;
-  final int points;
-  final int difficulty;
+  final Lesson lesson;
   final VoidCallback? onTap;
   final bool isCompleted;
-  final double? progress;
 
   const LessonCard({
     Key? key,
-    required this.title,
-    required this.subject,
-    required this.duration,
-    required this.points,
-    required this.difficulty,
+    required this.lesson,
     this.onTap,
     this.isCompleted = false,
-    this.progress,
   }) : super(key: key);
 
   @override
@@ -32,248 +22,188 @@ class LessonCard extends StatefulWidget {
 
 class _LessonCardState extends State<LessonCard>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   bool _isHovered = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 150),
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) => _controller.reverse(),
-      onTapCancel: () => _controller.reverse(),
-      onTap: widget.onTap,
+    final theme = Theme.of(context);
+
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _animationController.forward();
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _animationController.reverse();
+      },
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
           return Transform.scale(
             scale: _scaleAnimation.value,
-            child: Container(
-              width: 200,
-              margin: const EdgeInsets.only(right: 16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: widget.isCompleted
-                      ? [
-                          AppTheme.successGreen,
-                          AppTheme.successGreen.withOpacity(0.8),
-                        ]
-                      : [
-                          _getSubjectColor(widget.subject),
-                          _getSubjectColor(widget.subject).withOpacity(0.8),
-                        ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: _getSubjectColor(widget.subject).withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+            child: GestureDetector(
+              onTap: widget.onTap,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primaryColor.withValues(alpha: 0.1),
+                      AppTheme.secondaryColor.withValues(alpha: 0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  // Background Pattern
-                  Positioned(
-                    top: -20,
-                    right: -20,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: widget.isCompleted
+                        ? AppTheme.successColor
+                        : AppTheme.primaryColor.withValues(alpha: 0.2),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-
-                  // Content
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header with Subject Icon
-                        Row(
-                          children: [
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color:
+                                  _getDifficultyColor().withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: widget.lesson.imageUrl != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      widget.lesson.imageUrl!,
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Icon(
+                                          Icons.book,
+                                          color: _getDifficultyColor(),
+                                          size: 30,
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.book,
+                                    color: _getDifficultyColor(),
+                                    size: 30,
+                                  ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.lesson.title,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textColor,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  widget.lesson.subject,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textColor
+                                        .withValues(alpha: 0.7),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (widget.isCompleted)
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
+                                color: AppTheme.successColor,
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Icon(
-                                _getSubjectIcon(widget.subject),
+                              child: const Icon(
+                                Icons.check_circle,
                                 color: Colors.white,
                                 size: 20,
                               ),
                             ),
-                            const Spacer(),
-                            if (widget.isCompleted)
-                              const Icon(
-                                FontAwesomeIcons.checkCircle,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Title
-                        Text(
-                          widget.title,
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // Subject
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            widget.subject,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                        ),
-
-                        const Spacer(),
-
-                        // Progress Bar (if in progress)
-                        if (widget.progress != null && !widget.isCompleted) ...[
-                          Container(
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: widget.progress! / 100,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                         ],
-
-                        // Bottom Info
-                        Row(
-                          children: [
-                            // Duration
-                            Row(
-                              children: [
-                                const Icon(
-                                  FontAwesomeIcons.clock,
-                                  color: Colors.white,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  widget.duration,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        color: Colors.white.withOpacity(0.9),
-                                      ),
-                                ),
-                              ],
-                            ),
-
-                            const Spacer(),
-
-                            // Difficulty Stars
-                            Row(
-                              children: List.generate(3, (index) {
-                                return Icon(
-                                  index < widget.difficulty
-                                      ? FontAwesomeIcons.solidStar
-                                      : FontAwesomeIcons.star,
-                                  color: Colors.white.withOpacity(
-                                    index < widget.difficulty ? 1.0 : 0.3,
-                                  ),
-                                  size: 10,
-                                );
-                              }),
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            // Points
-                            Row(
-                              children: [
-                                const Icon(
-                                  FontAwesomeIcons.gem,
-                                  color: Colors.white,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${widget.points}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        widget.lesson.description,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textColor.withValues(alpha: 0.8),
                         ),
-                      ],
-                    ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _buildInfoChip(
+                            icon: Icons.timer,
+                            label: '${widget.lesson.estimatedDuration} min',
+                            color: AppTheme.primaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            icon: Icons.signal_cellular_alt,
+                            label: widget.lesson.difficulty,
+                            color: _getDifficultyColor(),
+                          ),
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            icon: Icons.school,
+                            label: 'Grade ${widget.lesson.grade}',
+                            color: AppTheme.secondaryColor,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           );
@@ -282,37 +212,46 @@ class _LessonCardState extends State<LessonCard>
     );
   }
 
-  Color _getSubjectColor(String subject) {
-    switch (subject.toLowerCase()) {
-      case 'math':
-      case 'mathematics':
-        return AppTheme.primaryBlue;
-      case 'english':
-      case 'language':
-        return AppTheme.primaryGreen;
-      case 'science':
-        return AppTheme.primaryPurple;
-      case 'art':
-        return AppTheme.primaryOrange;
-      default:
-        return AppTheme.primaryBlue;
-    }
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  IconData _getSubjectIcon(String subject) {
-    switch (subject.toLowerCase()) {
-      case 'math':
-      case 'mathematics':
-        return FontAwesomeIcons.calculator;
-      case 'english':
-      case 'language':
-        return FontAwesomeIcons.book;
-      case 'science':
-        return FontAwesomeIcons.flask;
-      case 'art':
-        return FontAwesomeIcons.palette;
+  Color _getDifficultyColor() {
+    switch (widget.lesson.difficulty.toLowerCase()) {
+      case 'easy':
+        return AppTheme.successColor;
+      case 'medium':
+        return AppTheme.warningColor;
+      case 'hard':
+        return AppTheme.errorColor;
       default:
-        return FontAwesomeIcons.graduationCap;
+        return AppTheme.primaryColor;
     }
   }
 }

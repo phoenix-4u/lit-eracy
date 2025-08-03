@@ -1,6 +1,6 @@
 // # File: frontend/lib/presentation/blocs/achievements/achievements_state.dart
 
-part of 'achievements_state.dart';
+part of 'achievements_bloc.dart';
 
 abstract class AchievementsState extends Equatable {
   const AchievementsState();
@@ -14,18 +14,18 @@ class AchievementsInitial extends AchievementsState {}
 class AchievementsLoading extends AchievementsState {}
 
 class AchievementsLoaded extends AchievementsState {
-  final List<dynamic> achievements;
+  final List<Achievement> achievements;
 
-  const AchievementsLoaded(this.achievements);
+  const AchievementsLoaded({required this.achievements});
 
   @override
   List<Object> get props => [achievements];
 }
 
 class AchievementUnlocked extends AchievementsState {
-  final dynamic achievement;
+  final Achievement achievement;
 
-  const AchievementUnlocked(this.achievement);
+  const AchievementUnlocked({required this.achievement});
 
   @override
   List<Object> get props => [achievement];
@@ -34,7 +34,7 @@ class AchievementUnlocked extends AchievementsState {
 class AchievementsError extends AchievementsState {
   final String message;
 
-  const AchievementsError(this.message);
+  const AchievementsError({required this.message});
 
   @override
   List<Object> get props => [message];

@@ -1,88 +1,225 @@
+//## File: frontend/lib/presentation/pages/home_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lit_eracy/core/di.dart';
-import 'package:lit_eracy/presentation/blocs/content/content_bloc.dart';
-import 'package:lit_eracy/presentation/widgets/lesson_card.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../blocs/content/content_bloc.dart';
+import '../widgets/lesson_card.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/di.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => sl<ContentBloc>()..add(LoadLessons(1)),
-      child: _HomePageBody(),
-    );
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late ContentBloc _contentBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _contentBloc = sl<ContentBloc>();
+    _contentBloc.add(const LoadLessons());
   }
-}
 
-class _HomePageBody extends StatefulWidget {
   @override
-  State<_HomePageBody> createState() => _HomePageBodyState();
-}
-
-class _HomePageBodyState extends State<_HomePageBody> {
-  int currency = 0;
-  String unlockedContent = '';
-
-  Future<void> _completeTask() async {
-    final response = await http.post(
-      Uri.parse('http://localhost:8000/content/complete_task'),
-    );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        currency = data['currency'] ?? 0;
-        unlockedContent = data['unlocked_content'] ?? '';
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Task completed! Unlocked: $unlockedContent')),
-        );
-      }
-    }
+  void dispose() {
+    _contentBloc.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lessons')),
-      body: Column(
+      appBar: AppBar(
+        title: const Text(
+          'AI Literacy',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: AppTheme.primaryColor,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () => _contentBloc.add(const LoadLessons()),
+          ),
+        ],
+      ),
+      body: BlocProvider.value(
+        value: _contentBloc,
+        child: const HomePageBody(),
+      ),
+    );
+  }
+}
+
+class HomePageBody extends StatelessWidget {
+  const HomePageBody({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.primaryColor,
+            AppTheme.backgroundColor,
+          ],
+          stops: const [0.0, 0.3],
+        ),
+      ),
+      child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Text('Knowledge Gems: $currency',
-                    style: const TextStyle(fontSize: 20)),
-                ElevatedButton(
-                  onPressed: _completeTask,
-                  child: const Text('Complete Task'),
-                ),
-              ],
+          _buildWelcomeSection(context),
+          Expanded(
+            child: _buildLessonsSection(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeSection(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Welcome back!',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Continue your learning journey',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLessonsSection(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.backgroundColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text(
+              'Your Lessons',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textColor,
+              ),
             ),
           ),
           Expanded(
             child: BlocBuilder<ContentBloc, ContentState>(
               builder: (context, state) {
                 if (state is ContentLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                    ),
+                  );
                 } else if (state is ContentLoaded) {
+                  if (state.lessons.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No lessons available',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    );
+                  }
+
                   return ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 20),
                     itemCount: state.lessons.length,
-                    itemBuilder: (context, index) =>
-                        LessonCard(lesson: state.lessons[index]),
+                    itemBuilder: (context, index) {
+                      final lesson = state.lessons[index];
+                      return LessonCard(
+                        lesson: lesson,
+                        isCompleted: lesson.isCompleted,
+                        onTap: () {
+                          // Navigate to lesson detail
+                          _navigateToLesson(context, lesson);
+                        },
+                      );
+                    },
                   );
                 } else if (state is ContentError) {
-                  return Center(child: Text(state.message));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error: ${state.message}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => context
+                              .read<ContentBloc>()
+                              .add(const LoadLessons()),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
+
                 return const SizedBox.shrink();
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _navigateToLesson(BuildContext context, lesson) {
+    // Implementation for lesson navigation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opening lesson: ${lesson.title}'),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

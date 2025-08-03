@@ -1,3 +1,6 @@
+// This file provides backward compatibility for imports
+export '../entities/achievement.dart';
+
 class Achievement {
   final int id;
   final int userId;

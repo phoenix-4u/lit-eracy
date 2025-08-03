@@ -1,100 +1,139 @@
 // # File: frontend/lib/data/datasources/remote/content_remote_datasource.dart
 
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../../../config/api_config.dart';
+import '../../../core/error/exceptions.dart';
 
 abstract class ContentRemoteDataSource {
-  Future<List<dynamic>> getLessons({String? subject, int? gradeLevel});
-  Future<List<dynamic>> getContent({String? subject, int? gradeLevel});
-  Future<void> updateProgress(
-      int userId, int contentId, double completionPercentage, int timeSpent);
-  Future<List<dynamic>> getUserProgress(int userId);
-  Future<List<dynamic>> getAchievements(int userId);
-  Future<void> unlockAchievement(int userId, int achievementId);
+  Future<List<Map<String, dynamic>>> getLessons({int? grade});
+  Future<List<Map<String, dynamic>>> getAchievements();
+  Future<List<Map<String, dynamic>>> getContent();
+  Future<Map<String, dynamic>> getLessonById(int id);
+  Future<Map<String, dynamic>> getContentById(int id);
 }
 
 class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
-  final Dio dio;
+  final http.Client client;
 
-  ContentRemoteDataSourceImpl(this.dio);
+  ContentRemoteDataSourceImpl(this.client);
 
   @override
-  Future<List<dynamic>> getLessons({String? subject, int? gradeLevel}) async {
-    final queryParams = <String, dynamic>{};
-    if (subject != null) queryParams['subject'] = subject;
-    if (gradeLevel != null) queryParams['grade_level'] = gradeLevel;
+  Future<List<Map<String, dynamic>>> getLessons({int? grade}) async {
+    try {
+      final queryParams = grade != null ? '?grade=$grade' : '';
+      final response = await client.get(
+        Uri.parse('${ApiConfig.lessonsEndpoint}$queryParams'),
+        headers: ApiConfig.defaultHeaders,
+      );
 
-    final response =
-        await dio.get('/api/content/lessons', queryParameters: queryParams);
-
-    if (response.statusCode == 200) {
-      return response.data as List<dynamic>;
-    } else {
-      throw Exception('Failed to get lessons');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(jsonData['lessons'] ?? []);
+      } else {
+        throw ServerException(
+            'Failed to fetch lessons: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error while fetching lessons');
     }
   }
 
   @override
-  Future<List<dynamic>> getContent({String? subject, int? gradeLevel}) async {
-    final queryParams = <String, dynamic>{};
-    if (subject != null) queryParams['subject'] = subject;
-    if (gradeLevel != null) queryParams['grade_level'] = gradeLevel;
+  Future<List<Map<String, dynamic>>> getAchievements() async {
+    try {
+      final response = await client.get(
+        Uri.parse(ApiConfig.achievementsEndpoint),
+        headers: ApiConfig.defaultHeaders,
+      );
 
-    final response =
-        await dio.get('/api/content', queryParameters: queryParams);
-
-    if (response.statusCode == 200) {
-      return response.data as List<dynamic>;
-    } else {
-      throw Exception('Failed to get content');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(jsonData['achievements'] ?? []);
+      } else {
+        throw ServerException(
+            'Failed to fetch achievements: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error while fetching achievements');
     }
   }
 
   @override
-  Future<void> updateProgress(int userId, int contentId,
-      double completionPercentage, int timeSpent) async {
-    final response = await dio.post('/api/progress/update', data: {
-      'user_id': userId,
-      'content_id': contentId,
-      'completion_percentage': completionPercentage,
-      'time_spent': timeSpent,
-    });
+  Future<List<Map<String, dynamic>>> getContent() async {
+    try {
+      final response = await client.get(
+        Uri.parse('${ApiConfig.baseUrl}${ApiConfig.apiVersion}/content'),
+        headers: ApiConfig.defaultHeaders,
+      );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update progress');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(jsonData['content'] ?? []);
+      } else {
+        throw ServerException(
+            'Failed to fetch content: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error while fetching content');
     }
   }
 
   @override
-  Future<List<dynamic>> getUserProgress(int userId) async {
-    final response = await dio.get('/api/progress/$userId');
+  Future<Map<String, dynamic>> getLessonById(int id) async {
+    try {
+      final response = await client.get(
+        Uri.parse('${ApiConfig.lessonsEndpoint}/$id'),
+        headers: ApiConfig.defaultHeaders,
+      );
 
-    if (response.statusCode == 200) {
-      return response.data as List<dynamic>;
-    } else {
-      throw Exception('Failed to get user progress');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData['lesson'] as Map<String, dynamic>;
+      } else if (response.statusCode == 404) {
+        throw ServerException('Lesson not found');
+      } else {
+        throw ServerException('Failed to fetch lesson: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error while fetching lesson');
     }
   }
 
   @override
-  Future<List<dynamic>> getAchievements(int userId) async {
-    final response = await dio.get('/api/achievements/$userId');
+  Future<Map<String, dynamic>> getContentById(int id) async {
+    try {
+      final response = await client.get(
+        Uri.parse('${ApiConfig.baseUrl}${ApiConfig.apiVersion}/content/$id'),
+        headers: ApiConfig.defaultHeaders,
+      );
 
-    if (response.statusCode == 200) {
-      return response.data as List<dynamic>;
-    } else {
-      throw Exception('Failed to get achievements');
-    }
-  }
-
-  @override
-  Future<void> unlockAchievement(int userId, int achievementId) async {
-    final response = await dio.post('/api/achievements/unlock', data: {
-      'user_id': userId,
-      'achievement_id': achievementId,
-    });
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to unlock achievement');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData['content'] as Map<String, dynamic>;
+      } else if (response.statusCode == 404) {
+        throw ServerException('Content not found');
+      } else {
+        throw ServerException(
+            'Failed to fetch content: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw NetworkException('Network error while fetching content');
     }
   }
 }

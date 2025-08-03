@@ -1,3 +1,6 @@
+// This file provides backward compatibility for imports
+export '../entities/lesson.dart';
+
 class Lesson {
   final int id;
   final String title;

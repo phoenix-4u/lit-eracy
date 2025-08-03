@@ -1,5 +1,8 @@
 // # File: frontend/lib/core/error/failures.dart
 
+// This file provides backward compatibility for imports
+export '../error/failures.dart';
+
 import 'package:equatable/equatable.dart';
 
 abstract class Failure extends Equatable {
