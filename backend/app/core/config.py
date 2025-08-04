@@ -1,29 +1,40 @@
-# File: backend/app/core/config.py
+# File: backend/app/core/config.py (Corrected)
 
-import os
-from typing import Optional
-from pydantic_settings import BaseSettings
+from typing import List, Optional
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    """
+    Application settings, loaded from environment variables or a .env file.
+    Default values are provided for local development and will be overridden
+    by any values found in the .env file or the system environment.
+    """
+    
+    # Configure Pydantic to load from a .env file
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,  # e.g., DATABASE_URL is the same as database_url
+    )
+
     # App settings
     APP_NAME: str = "Lit-eracy"
     VERSION: str = "1.0.0"
     DEBUG: bool = True
     
-    # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./ai_literacy_app.db")
+    # Database URL
+    DATABASE_URL: str = "sqlite+aiosqlite:///./ai_literacy_app.db"
     
-    # Redis
-    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
+    # Redis URL (To match the value from your error log)
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-change-in-production")
+    SECRET_KEY: str = "your-super-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # AI Settings
-    AI_MODEL_PATH: str = os.getenv("AI_MODEL_PATH", "./models/gemma_2b_quantized.tflite")
+    AI_MODEL_PATH: str = "./models/gemma_2b_quantized.tflite"
     AI_MAX_TOKENS: int = 512
     AI_TEMPERATURE: float = 0.7
     
@@ -32,19 +43,17 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
     
     # Email settings (for notifications)
-    SMTP_SERVER: Optional[str] = os.getenv("SMTP_SERVER")
-    SMTP_PORT: Optional[int] = int(os.getenv("SMTP_PORT", "587")) if os.getenv("SMTP_PORT") else None
-    SMTP_USERNAME: Optional[str] = os.getenv("SMTP_USERNAME")
-    SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
+    SMTP_SERVER: Optional[str] = None
+    SMTP_PORT: Optional[int] = 587
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
     
     # CORS settings
-    ALLOWED_HOSTS: list = ["*"]  # In production, specify exact hosts
+    ALLOWED_HOSTS: List[str] = ["*"]
     
     # Parental control settings
     DEFAULT_DAILY_LIMIT_MINUTES: int = 60
     DEFAULT_BREAK_REMINDER_MINUTES: int = 15
-    
-    class Config:
-        env_file = ".env"
 
+# Instantiate the settings. Pydantic handles the loading.
 settings = Settings()

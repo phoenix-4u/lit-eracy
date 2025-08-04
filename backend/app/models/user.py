@@ -19,3 +19,4 @@ class User(Base):
     # Relationships (if you have them)
     user_progress = relationship("UserProgress", back_populates="user")
     achievements = relationship("UserAchievement", back_populates="user")
+    points = relationship("UserPoints", uselist=False, back_populates="user")
