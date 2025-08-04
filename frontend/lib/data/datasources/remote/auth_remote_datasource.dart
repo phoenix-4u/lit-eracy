@@ -1,116 +1,148 @@
-// # File: frontend/lib/data/datasources/remote/auth_remote_datasource.dart
+// ## File: frontend/lib/data/datasources/remote/auth_remote_datasource.dart
 
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
-import '../../../config/api_config.dart';
-import '../../../core/error/exceptions.dart';
+import 'package:dio/dio.dart';
+import '../../../../../core/error/exceptions.dart';
+import '../../../../../config/api_config.dart';
 
 abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String email, String password);
   Future<Map<String, dynamic>> register(Map<String, dynamic> userData);
-  Future<void> logout(String token);
   Future<Map<String, dynamic>> refreshToken(String refreshToken);
+  Future<void> logout(String token);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final http.Client client;
+  final Dio dio;
 
-  AuthRemoteDataSourceImpl(this.client);
+  AuthRemoteDataSourceImpl({required this.dio});
+
+  // Helper function to safely parse FastAPI error details
+  // String _parseErrorDetail(dynamic detail) {
+  //   if (detail is String) {
+  //     return detail;
+  //   }
+  //   if (detail is List && detail.isNotEmpty) {
+  //     final firstError = detail[0];
+  //     if (firstError is Map && firstError.containsKey('msg')) {
+  //       return firstError['msg'];
+  //     }
+  //   }
+  //   return 'An unknown server error occurred.';
+  // }
+
+  String _parseErrorDetail(dynamic responseData) {
+    if (responseData is Map<String, dynamic> &&
+        responseData.containsKey('detail')) {
+      final detail = responseData['detail'];
+      if (detail is String) {
+        return detail;
+      }
+      if (detail is List && detail.isNotEmpty) {
+        final firstError = detail[0];
+        if (firstError is Map && firstError.containsKey('msg')) {
+          return firstError['msg'];
+        }
+      }
+    }
+    return 'An unknown server error occurred.';
+  }
 
   @override
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      final response = await client.post(
-        Uri.parse(ApiConfig.loginEndpoint),
-        headers: ApiConfig.defaultHeaders,
-        body: json.encode({
-          'email': email,
-          'password': password,
-        }),
+      final Map<String, dynamic> requestBody = {
+        'email': email,
+        'password': password,
+      };
+
+      final response = await dio.post(
+        ApiConfig.loginEndpoint,
+        data: requestBody,
       );
 
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else if (response.statusCode == 401) {
-        throw const AuthenticationException('Invalid credentials');
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data;
       } else {
-        throw ServerException('Login failed: ${response.statusCode}');
+        throw ServerException(
+            'Login failed with status: ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      // THIS IS THE CRITICAL SECTION
+      // When an error occurs, we must throw an exception.
+      // We should not let the execution continue or return null.
+      if (e.response?.statusCode == 401) {
+        final errorMessage = _parseErrorDetail(e.response?.data);
+        throw AuthenticationException(errorMessage);
+      }
+      final errorMessage = _parseErrorDetail(e.response?.data);
+      throw ServerException(errorMessage);
     } catch (e) {
-      if (e is AuthenticationException || e is ServerException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error during login');
+      // This catches non-Dio errors, like the TypeError if it happens before the call.
+      // This confirms the error is happening before the dio.post call.
+      throw ServerException(
+          'An unexpected client-side error occurred: ${e.toString()}');
     }
   }
 
   @override
   Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
     try {
-      final response = await client.post(
-        Uri.parse(ApiConfig.registerEndpoint),
-        headers: ApiConfig.defaultHeaders,
-        body: json.encode(userData),
+      final response = await dio.post(
+        ApiConfig.registerEndpoint,
+        data: userData,
       );
 
-      if (response.statusCode == 201) {
-        return json.decode(response.body);
-      } else if (response.statusCode == 400) {
-        final errorData = json.decode(response.body);
-        throw ValidationException(
-            errorData['message'] ?? 'Registration failed');
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data;
       } else {
-        throw ServerException('Registration failed: ${response.statusCode}');
+        throw ServerException(
+            'Registration failed with status: ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      // FIX: Use the robust error parser
+      final errorMessage = _parseErrorDetail(e.response?.data['detail']);
+      if (e.response?.statusCode == 422) {
+        throw ValidationException(errorMessage);
+      }
+      throw ServerException(errorMessage);
     } catch (e) {
-      if (e is ValidationException || e is ServerException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error during registration');
+      throw const ServerException('An unexpected error occurred.');
     }
   }
 
   @override
   Future<void> logout(String token) async {
     try {
-      final response = await client.post(
-        Uri.parse(ApiConfig.logoutEndpoint),
-        headers: ApiConfig.authHeaders(token),
+      await dio.post(
+        ApiConfig.logoutEndpoint,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-
-      if (response.statusCode != 200) {
-        throw ServerException('Logout failed: ${response.statusCode}');
-      }
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error during logout');
+      // Don't throw errors on logout failure
     }
   }
 
   @override
   Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
     try {
-      final response = await client.post(
-        Uri.parse(ApiConfig.refreshTokenEndpoint),
-        headers: ApiConfig.defaultHeaders,
-        body: json.encode({
-          'refresh_token': refreshToken,
-        }),
+      final response = await dio.post(
+        ApiConfig.refreshTokenEndpoint,
+        options: Options(headers: {'Authorization': 'Bearer $refreshToken'}),
       );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data;
       } else {
-        throw const AuthenticationException('Token refresh failed');
+        throw ServerException(
+            'Token refresh failed with status: ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      final errorMessage = _parseErrorDetail(e.response?.data['detail']);
+      if (e.response?.statusCode == 401) {
+        throw AuthenticationException(errorMessage);
+      }
+      throw ServerException(errorMessage);
     } catch (e) {
-      if (e is AuthenticationException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error during token refresh');
+      throw const ServerException('An unexpected error occurred.');
     }
   }
 }

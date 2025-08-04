@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 
 from .database import init_db, close_db, get_async_db
 from .models import User, UserPoints
-from .routers import auth
+from .routers import auth, parent
 from .core.config import settings
 from .services.ai_service import AIService
 
@@ -74,6 +74,8 @@ app.add_middleware(
 
 # Include API routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(parent.router, prefix="/api/parent", tags=["Parent"])
+
 
 # --- Root and Health Check Endpoints ---
 @app.get("/")
@@ -143,6 +145,34 @@ async def get_lessons(grade_level: Optional[int] = None, subject: Optional[str] 
     if subject:
         lessons = [l for l in lessons if l["subject"].lower() == subject.lower()]
     return lessons
+
+@app.get("/api/content/achievements")
+async def get_achievements():
+    # Mock data for achievements. In the future, this will come from the database.
+    achievements = [
+        {
+            "id": 1,
+            "name": "First Steps",
+            "description": "Completed your first lesson!",
+            "badge_icon": "🏆",
+            "earned_at": "2024-01-10T09:00:00Z"
+        },
+        {
+            "id": 2,
+            "name": "Bookworm",
+            "description": "Read 5 stories.",
+            "badge_icon": "🐛",
+            "earned_at": None # This achievement has not been earned yet
+        },
+        {
+            "id": 3,
+            "name": "Quiz Master",
+            "description": "Scored 100% on a quiz.",
+            "badge_icon": "🎯",
+            "earned_at": "2024-02-15T11:30:00Z"
+        }
+    ]
+    return achievements
 
 @app.post("/api/progress/update")
 async def update_progress(content_id: int, completion_percentage: float, time_spent: int, current_user: User = Depends(auth.get_current_active_user), db: AsyncSession = Depends(get_async_db)):

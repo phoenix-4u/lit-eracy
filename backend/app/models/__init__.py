@@ -7,5 +7,15 @@ from .user_points import UserPoints
 from .user_progress import UserProgress           # if added earlier
 from .content import Content                     # if added earlier
 from .user_achievement import UserAchievement
+from .parent_child import ParentChild
 
-__all__ = ["Achievement", "User", "Content", "UserProgress", "UserAchievement", "Lesson", "TokenBlacklist", "UserPoints", "Task"]
+__all__ = ["Achievement", 
+           "User", 
+           "Content", 
+           "UserProgress", 
+           "UserAchievement", 
+           "Lesson", 
+           "TokenBlacklist", 
+           "UserPoints", 
+           "Task", 
+           "ParentChild"]

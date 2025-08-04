@@ -11,6 +11,17 @@ from app.models.user import User
 from app.models.user_points import UserPoints
 from app.core.security import get_password_hash
 
+from app.models.parent_child import ParentChild
+
+def create_parent_child():
+    db = SessionLocal()
+    parent = db.query(User).filter(User.role=="parent").first()
+    child = db.query(User).filter(User.role=="student").first()
+    if parent and child:
+        db.add(ParentChild(parent_id=parent.id, child_id=child.id))
+        db.commit()
+    db.close()
+
 def create_users_by_role():
     """Create test users for all three roles: student, teacher, parent"""
     
@@ -180,6 +191,8 @@ def create_additional_students():
             db.commit()
             
             print(f"✅ Created additional student: {db_user.username}")
+
+            
             
     except Exception as e:
         print(f"❌ Error creating additional students: {e}")
@@ -192,6 +205,7 @@ if __name__ == "__main__":
     print("=" * 60)
     
     create_users_by_role()
+    create_parent_child()
     
     print("\n🎓 Creating additional students...")
     create_additional_students()

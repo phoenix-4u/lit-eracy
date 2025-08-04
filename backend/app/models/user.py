@@ -26,3 +26,16 @@ class User(Base):
     user_progress = relationship("UserProgress", back_populates="user")
     achievements = relationship("UserAchievement", back_populates="user")
     points = relationship("UserPoints", uselist=False, back_populates="user")
+    children = relationship(
+        "ParentChild",
+        foreign_keys="ParentChild.parent_id",
+        back_populates="parent",
+        cascade="all, delete-orphan"
+    )
+    parents = relationship(
+        "ParentChild",
+        foreign_keys="ParentChild.child_id",
+        back_populates="child",
+        cascade="all, delete-orphan"
+    )
+

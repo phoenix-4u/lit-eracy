@@ -4,12 +4,16 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 
 // Core Services
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../services/gamification_service.dart';
 import '../services/token_storage.dart';
+
+// Config
+import '../../config/api_config.dart';
 
 // Data Layer
 import '../../data/datasources/remote/auth_remote_datasource.dart';
@@ -54,6 +58,21 @@ Future<void> init() async {
   sl.registerLazySingleton(() => sharedPreferences);
   sl.registerLazySingleton(() => http.Client());
   sl.registerLazySingleton(() => Connectivity());
+  // sl.registerLazySingleton(() => Dio());
+
+  // Registering API Config
+  sl.registerLazySingleton(() {
+    return Dio(
+      BaseOptions(
+        baseUrl: ApiConfig.baseUrl, // e.g., 'http://localhost:8000'
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        headers: {
+          'Accept': 'application/json',
+        },
+      ),
+    );
+  });
 
   // Core Services
   sl.registerLazySingleton<TokenStorage>(() => TokenStorageImpl(sl()));
@@ -69,7 +88,7 @@ Future<void> init() async {
 
   // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-      () => AuthRemoteDataSourceImpl(sl()));
+      () => AuthRemoteDataSourceImpl(dio: sl()));
   sl.registerLazySingleton<UserRemoteDataSource>(
       () => UserRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<ContentRemoteDataSource>(
@@ -81,6 +100,7 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
         remoteDataSource: sl(),
         localDataSource: sl(),
+        dio: sl(),
       ));
   sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(
         remoteDataSource: sl(),

@@ -1,6 +1,6 @@
 # File: backend/app/routers/auth.py
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -126,8 +126,24 @@ async def login_for_access_token(
     }
 
 @router.post("/login", response_model=Token)
-async def login(user_credentials: UserLogin, db: AsyncSession = Depends(get_async_db)):
+async def login( request: Request, user_credentials: UserLogin, db: AsyncSession = Depends(get_async_db)):
     # Changed from user_credentials.username to user_credentials.email
+
+    # --- 3. ADD THESE PRINT STATEMENTS FOR DEBUGGING ---
+    print("===================== LOGIN REQUEST DIAGNOSTICS =====================")
+    print(f"Request Headers: {request.headers}")
+    try:
+        # FIX: Use request.json() because the Content-Type is application/json
+        json_body = await request.json()
+        print(f"Request JSON Body: {json_body}")
+    except Exception as e:
+        # This is a fallback in case the body is not valid JSON for some reason
+        raw_body = await request.body()
+        print(f"Could not parse JSON body. Raw Body: {raw_body}")
+        print(f"Error parsing JSON: {e}")
+    print("==================================================================")
+       # --- END OF DEBUGGING PRINTS ---
+
     user = await authenticate_user(db, user_credentials.email, user_credentials.password)
     if not user:
         raise HTTPException(
