@@ -1,10 +1,10 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" class="logo" width="120"/>
 
-# Functional Requirements Document for AI Literacy App
+# Functional Requirements Document for Lit-eracy
 
 ## Executive Summary
 
-This comprehensive Functional Requirements Document outlines the development of a **habit-forming AI literacy application** for children aged 3-14 in developing regions, with a specific proof-of-concept targeting India/CBSE curriculum standards. The application leverages local Gemma AI to create personalized, engaging, and culturally relevant learning experiences through an offline-first architecture that ensures accessibility in regions with limited connectivity.[^1]
+This comprehensive Functional Requirements Document outlines the development of a **habit-forming Lit-eracylication** for children aged 3-14 in developing regions, with a specific proof-of-concept targeting India/CBSE curriculum standards. The application leverages local Gemma AI to create personalized, engaging, and culturally relevant learning experiences through an offline-first architecture that ensures accessibility in regions with limited connectivity.[^1]
 
 ## Project Overview
 
@@ -174,7 +174,7 @@ The application integrates **local Gemma AI** to power deep personalization that
 - **Intelligent Synchronization**: Opportunistic sync when connectivity available
 - **Bandwidth Optimization**: Minimal data usage for updates and collaborative features
 
-This comprehensive Functional Requirements Document provides a detailed blueprint for developing an AI literacy application that addresses the unique needs of children in developing regions while leveraging cutting-edge AI technology to create engaging, personalized, and culturally appropriate learning experiences. The requirements ensure the application will be technically feasible, educationally effective, and socially responsible while maintaining the highest standards of child safety and educational quality.
+This comprehensive Functional Requirements Document provides a detailed blueprint for developing an Lit-eracylication that addresses the unique needs of children in developing regions while leveraging cutting-edge AI technology to create engaging, personalized, and culturally appropriate learning experiences. The requirements ensure the application will be technically feasible, educationally effective, and socially responsible while maintaining the highest standards of child safety and educational quality.
 
 <div style="text-align: center">⁂</div>
 

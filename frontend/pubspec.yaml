@@ -104,19 +104,20 @@ flutter:
     - assets/animations/
     - assets/sounds/
     - assets/models/
+    - assets/fonts/
 
   fonts:
     - family: ComicNeue
       fonts:
-        - asset: fonts/ComicNeue-Regular.ttf
-        - asset: fonts/ComicNeue-Bold.ttf
+        - asset: assets/fonts/ComicNeue-Regular.ttf
+        - asset: assets/fonts/ComicNeue-Bold.ttf
           weight: 700
     - family: Fredoka
       fonts:
-        - asset: fonts/Fredoka-Regular.ttf
-        - asset: fonts/Fredoka-Medium.ttf
+        - asset: assets/fonts/Fredoka-Regular.ttf
+        - asset: assets/fonts/Fredoka-Medium.ttf
           weight: 500
-        - asset: fonts/Fredoka-SemiBold.ttf
+        - asset: assets/fonts/Fredoka-SemiBold.ttf
           weight: 600
-        - asset: fonts/Fredoka-Bold.ttf
+        - asset: assets/fonts/Fredoka-Bold.ttf
           weight: 700

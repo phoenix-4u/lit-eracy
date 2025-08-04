@@ -1,7 +1,7 @@
-# AI Literacy App
+# Lit-eracy
 
 ## Overview
-This repository contains the backend and frontend code for the AI Literacy App—a cross-platform educational application designed for children aged 3-14, with offline-first functionality and local AI processing.
+This repository contains the backend and frontend code for the Lit-eracy—a cross-platform educational application designed for children aged 3-14, with offline-first functionality and local AI processing.
 
 ## Prerequisites
 - Docker & Docker Compose
@@ -11,7 +11,7 @@ This repository contains the backend and frontend code for the AI Literacy App�
 ## Setup & Run
 1. Clone the repo and navigate to the root folder:
 
-# AI Literacy App (Frontend)
+# Lit-eracy (Frontend)
 
 ## Setup
 

@@ -89,7 +89,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha((255 * 0.3).round()),
+                              color:
+                                  Colors.black.withAlpha((255 * 0.3).round()),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -114,7 +115,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                 child: AnimatedTextKit(
                   animatedTexts: [
                     TypewriterAnimatedText(
-                      'AI Literacy App',
+                      'Lit-eracy',
                       textStyle:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 color: Colors.white,

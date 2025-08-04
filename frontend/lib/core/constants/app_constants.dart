@@ -2,7 +2,7 @@
 
 class AppConstants {
   // App Information
-  static const String appName = 'AI Literacy App';
+  static const String appName = 'Lit-eracy';
   static const String appVersion = '1.0.0';
   static const String appDescription =
       'AI-powered educational app for children';

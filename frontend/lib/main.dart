@@ -13,12 +13,14 @@ import 'presentation/blocs/progress/progress_bloc.dart';
 import 'presentation/blocs/achievements/achievements_bloc.dart';
 import 'presentation/pages/splash/splash_page.dart';
 
+// FIX: Import the pages you want to navigate to
+import 'presentation/pages/auth/login_page.dart';
+import 'presentation/pages/auth/registration_page.dart';
+import 'presentation/pages/home_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize dependency injection
   await di.init();
-
   runApp(const MyApp());
 }
 
@@ -30,7 +32,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => di.sl<AuthBloc>(),
+          create: (context) => di.sl<AuthBloc>()..add(AuthCheckRequested()),
         ),
         BlocProvider<UserBloc>(
           create: (context) => di.sl<UserBloc>(),
@@ -46,24 +48,21 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'AI Literacy App',
+        title: 'Lit-eracy',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            // FIX: Use the static const field 'primaryBlue' directly instead of the getter.
             seedColor: AppTheme.primaryBlue,
             brightness: Brightness.light,
           ),
           textTheme: GoogleFonts.poppinsTextTheme(),
           appBarTheme: const AppBarTheme(
-            // FIX: Use the static const field 'primaryBlue' directly instead of the getter.
             backgroundColor: AppTheme.primaryBlue,
             foregroundColor: Colors.white,
             elevation: 0,
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              // FIX: Use the static const field 'primaryBlue' directly instead of the getter.
               backgroundColor: AppTheme.primaryBlue,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
@@ -73,7 +72,17 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
+        // The 'home' property defines the very first screen.
         home: const SplashPage(),
+
+        // FIX: Add the 'routes' property to define all named navigation paths.
+        routes: {
+          '/login': (context) => const LoginPage(),
+          '/register': (context) => const RegistrationPage(),
+          '/home': (context) => const HomePage(),
+          // Add other pages here as you create them, e.g.:
+          // '/student-dashboard': (context) => const StudentDashboardPage(),
+        },
       ),
     );
   }

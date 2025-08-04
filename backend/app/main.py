@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI):
     await close_db()
 
 app = FastAPI(
-    title="AI Literacy App API",
+    title="Lit-eracy API",
     description="Backend API for AI-powered educational app for children",
     version="1.0.0",
     lifespan=lifespan
@@ -71,7 +71,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 @app.get("/")
 async def root():
     return {
-        "message": "Welcome to AI Literacy App API",
+        "message": "Welcome to Lit-eracy API",
         "version": "1.0.0",
         "status": "active",
         "database": "SQLite"

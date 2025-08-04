@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_literacy_app/main.dart';
-import 'package:ai_literacy_app/presentation/pages/login_page.dart';
+import 'package:ai_literacy_app/presentation/pages/auth/login_page.dart';
 
 void main() {
   testWidgets('App starts with LoginPage', (WidgetTester tester) async {

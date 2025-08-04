@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # App settings
-    APP_NAME: str = "AI Literacy App"
+    APP_NAME: str = "Lit-eracy"
     VERSION: str = "1.0.0"
     DEBUG: bool = True
     

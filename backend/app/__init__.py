@@ -1,3 +1,3 @@
 """
-AI Literacy App Backend
+Lit-eracy Backend
 """
