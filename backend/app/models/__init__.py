@@ -8,4 +8,4 @@ from .user_progress import UserProgress           # if added earlier
 from .content import Content                     # if added earlier
 from .user_achievement import UserAchievement
 
-__all__ = ["Achievement", "User", "Content", "UserProgress", "UserAchievement", "Lesson", "TokenBlacklist", "UserPoints"]
+__all__ = ["Achievement", "User", "Content", "UserProgress", "UserAchievement", "Lesson", "TokenBlacklist", "UserPoints", "Task"]

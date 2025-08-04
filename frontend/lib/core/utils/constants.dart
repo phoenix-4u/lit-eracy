@@ -7,7 +7,7 @@ class AppConstants {
 
   // API Endpoints
   static const String baseUrl = 'http://localhost:8000';
-  static const String apiVersion = '/api/v1';
+  static const String apiVersion = '/api';
 
   // Storage Keys
   static const String userTokenKey = 'user_token';

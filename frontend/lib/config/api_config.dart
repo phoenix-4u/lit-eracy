@@ -2,7 +2,7 @@
 
 class ApiConfig {
   static const String baseUrl = 'http://localhost:8000';
-  static const String apiVersion = '/api/v1';
+  static const String apiVersion = '/api';
 
   // Auth endpoints
   static const String loginEndpoint = '$baseUrl$apiVersion/auth/login';

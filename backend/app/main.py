@@ -11,7 +11,7 @@ import redis.asyncio as redis
 from contextlib import asynccontextmanager
 
 from .database import init_db, close_db, get_async_db
-from .models import User, UserPoints  # Assuming models are correctly exposed in models/__init__.py
+from .models import User, UserPoints
 from .routers import auth
 from .core.config import settings
 from .services.ai_service import AIService

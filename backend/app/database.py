@@ -10,13 +10,13 @@ import asyncio
 # Database URL - SQLite for development and production
 DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "sqlite:///./ai_literacy_app.db"
+    "sqlite:///./data/literacy_database.db"
 )
 
 # Async SQLite URL
 ASYNC_DATABASE_URL = os.getenv(
     "ASYNC_DATABASE_URL",
-    "sqlite+aiosqlite:///./ai_literacy_app.db"
+    "sqlite+aiosqlite:///./data/literacy_database.db"
 )
 
 # Create sync engine for migrations and admin tasks
