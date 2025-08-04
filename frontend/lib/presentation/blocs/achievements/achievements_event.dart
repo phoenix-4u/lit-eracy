@@ -12,7 +12,7 @@ abstract class AchievementsEvent extends Equatable {
 class LoadAchievements extends AchievementsEvent {}
 
 class UnlockAchievement extends AchievementsEvent {
-  final int achievementId;
+  final String achievementId;
 
   const UnlockAchievement({required this.achievementId});
 

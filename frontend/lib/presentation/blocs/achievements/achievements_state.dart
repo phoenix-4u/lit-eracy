@@ -1,4 +1,4 @@
-// # File: frontend/lib/presentation/blocs/achievements/achievements_state.dart
+// # File: frontend/lib/presentation/blocs/achievements/achievements_state.dart (Fixed)
 
 part of 'achievements_bloc.dart';
 
@@ -9,9 +9,13 @@ abstract class AchievementsState extends Equatable {
   List<Object> get props => [];
 }
 
-class AchievementsInitial extends AchievementsState {}
+class AchievementsInitial extends AchievementsState {
+  const AchievementsInitial();
+}
 
-class AchievementsLoading extends AchievementsState {}
+class AchievementsLoading extends AchievementsState {
+  const AchievementsLoading();
+}
 
 class AchievementsLoaded extends AchievementsState {
   final List<Achievement> achievements;

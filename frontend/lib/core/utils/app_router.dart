@@ -1,4 +1,4 @@
-// # File: frontend/lib/core/utils/app_router.dart
+// File: frontend/lib/core/utils/app_router.dart
 
 import 'package:flutter/material.dart';
 import '../../presentation/pages/splash/splash_page.dart';
@@ -27,31 +27,28 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
-        return MaterialPageRoute(
-          builder: (_) => const SplashPage(),
-        );
+        return MaterialPageRoute(builder: (_) => const SplashPage());
 
       case login:
-        return MaterialPageRoute(
-          builder: (_) => const LoginPage(),
-        );
+        return MaterialPageRoute(builder: (_) => const LoginPage());
 
       case register:
-        return MaterialPageRoute(
-          builder: (_) => const RegistrationPage(),
-        );
+        return MaterialPageRoute(builder: (_) => const RegistrationPage());
 
       case studentDashboard:
+        final userId = settings.arguments as String?;
         return MaterialPageRoute(
-          builder: (_) => const StudentDashboardPage(),
+          builder: (_) => StudentDashboardPage(userId: userId ?? ''),
         );
 
       case parentDashboard:
+        // No ID parameter expected by ParentDashboardPage
         return MaterialPageRoute(
           builder: (_) => const ParentDashboardPage(),
         );
 
       case teacherDashboard:
+        // No ID parameter expected by TeacherDashboardPage
         return MaterialPageRoute(
           builder: (_) => const TeacherDashboardPage(),
         );
@@ -60,7 +57,7 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => LessonPage(
-            lessonId: args?['lessonId'] ?? 1,
+            lessonId: args?['lessonId'] as int? ?? 1,
           ),
         );
 
@@ -68,27 +65,21 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => QuizPage(
-            quizId: args?['quizId'] ?? 1,
+            quizId: args?['quizId'] as int? ?? 1,
           ),
         );
 
       case achievements:
-        return MaterialPageRoute(
-          builder: (_) => const AchievementsPage(),
-        );
+        return MaterialPageRoute(builder: (_) => const AchievementsPage());
 
       case aiChat:
-        return MaterialPageRoute(
-          builder: (_) => const AIChatPage(),
-        );
+        return MaterialPageRoute(builder: (_) => const AIChatPage());
 
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
             appBar: AppBar(title: const Text('Page Not Found')),
-            body: const Center(
-              child: Text('Page not found!'),
-            ),
+            body: const Center(child: Text('Page not found!')),
           ),
         );
     }

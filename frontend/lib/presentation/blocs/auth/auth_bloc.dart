@@ -1,10 +1,10 @@
-// # File: frontend/lib/presentation/blocs/auth/auth_bloc.dart
+// # File: frontend/lib/presentation/blocs/auth/auth_bloc.dart (Fixed)
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../domain/entities/user.dart';
-import '../../../domain/usecases/login_usecase.dart';
+import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
 
 part 'auth_event.dart';

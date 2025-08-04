@@ -1,4 +1,4 @@
-// # File: frontend/lib/core/di/injection_container.dart (Final Correct Version)
+// # File: frontend/lib/core/di/injection_container.dart (Final Fixed Version)
 
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
@@ -101,22 +101,20 @@ Future<void> init() async {
           ));
 
   // Use Cases
-  sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
-  sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
-  sl.registerLazySingleton(() => GetUserProfileUseCase(sl<UserRepository>()));
-  sl.registerLazySingleton(() => GetLessonsUseCase(sl<ContentRepository>()));
-  sl.registerLazySingleton(
-      () => UpdateProgressUseCase(sl<ProgressRepository>()));
-  sl.registerLazySingleton(
-      () => GetAchievementsUseCase(sl<AchievementsRepository>()));
+  sl.registerLazySingleton(() => LoginUseCase(sl()));
+  sl.registerLazySingleton(() => RegisterUseCase(sl()));
+  sl.registerLazySingleton(() => GetUserProfileUseCase(sl()));
+  sl.registerLazySingleton(() => GetLessonsUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateProgressUseCase(sl()));
+  sl.registerLazySingleton(() => GetAchievementsUseCase(sl()));
 
   // BLoCs
   sl.registerFactory(() => AuthBloc(
         loginUseCase: sl(),
         registerUseCase: sl(),
       ));
-  sl.registerFactory(() => UserBloc());
+  sl.registerFactory(() => UserBloc(getUserProfileUseCase: sl()));
   sl.registerFactory(() => ContentBloc(getLessonsUseCase: sl()));
-  sl.registerFactory(() => ProgressBloc(sl<UpdateProgressUseCase>()));
+  sl.registerFactory(() => ProgressBloc(sl()));
   sl.registerFactory(() => AchievementsBloc(getAchievementsUseCase: sl()));
 }

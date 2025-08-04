@@ -1,8 +1,6 @@
-// # File: frontend/lib/presentation/blocs/content/content_state.dart
+// # File: frontend/lib/presentation/blocs/content/content_state.dart (Fixed)
 
-import 'package:equatable/equatable.dart';
-import '../../../domain/entities/lesson.dart';
-import '../../../domain/entities/content.dart';
+part of 'content_bloc.dart';
 
 abstract class ContentState extends Equatable {
   const ContentState();
@@ -11,9 +9,13 @@ abstract class ContentState extends Equatable {
   List<Object> get props => [];
 }
 
-class ContentInitial extends ContentState {}
+class ContentInitial extends ContentState {
+  const ContentInitial();
+}
 
-class ContentLoading extends ContentState {}
+class ContentLoading extends ContentState {
+  const ContentLoading();
+}
 
 class ContentLoaded extends ContentState {
   final List<Lesson> lessons;

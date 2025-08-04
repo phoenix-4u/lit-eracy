@@ -1,173 +1,75 @@
-// # File: frontend/lib/presentation/widgets/progress_card.dart
+// # File: frontend/lib/presentation/widgets/progress_card.dart (Fixed)
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme/app_theme.dart';
 
 class ProgressCard extends StatelessWidget {
-  final dynamic progress;
-  final VoidCallback? onTap;
+  final String subject;
+  final double progress;
 
   const ProgressCard({
     super.key,
+    required this.subject,
     required this.progress,
-    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha((255 * 0.1).round()),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Content Icon
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: _getSubjectColor(progress?.subject ?? 'Math').withAlpha((255 * 0.1).round()),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                _getSubjectIcon(progress?.subject ?? 'Math'),
-                color: _getSubjectColor(progress?.subject ?? 'Math'),
-                size: 24,
-              ),
-            ),
+    final color = _getSubjectColor(subject);
 
-            const SizedBox(width: 16),
-
-            // Content Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    progress?.title ?? 'Learning Content',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${progress?.subject ?? 'Subject'} • ${progress?.estimatedDuration ?? 5} min',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.secondaryText,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Progress Bar
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Progress',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: AppTheme.secondaryText,
-                                ),
-                          ),
-                          Text(
-                            '${progress?.completionPercentage?.round() ?? 0}%',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: AppTheme.primaryBlue,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      LinearProgressIndicator(
-                        value: (progress?.completionPercentage ?? 0) / 100,
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          _getSubjectColor(progress?.subject ?? 'Math'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 16),
-
-            // Continue Button
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Continue',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            subject,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${(progress * 100).toInt()}% Complete',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppTheme.secondaryText,
+                ),
+          ),
+        ],
       ),
     );
   }
 
   Color _getSubjectColor(String subject) {
     switch (subject.toLowerCase()) {
-      case 'math':
-      case 'mathematics':
+      case 'reading':
         return AppTheme.primaryBlue;
-      case 'english':
-      case 'language':
+      case 'math':
         return AppTheme.primaryGreen;
       case 'science':
-        return AppTheme.primaryPurple;
-      case 'art':
         return AppTheme.primaryOrange;
+      case 'ai basics':
+        return AppTheme.primaryPurple;
       default:
         return AppTheme.primaryBlue;
-    }
-  }
-
-  IconData _getSubjectIcon(String subject) {
-    switch (subject.toLowerCase()) {
-      case 'math':
-      case 'mathematics':
-        return FontAwesomeIcons.calculator;
-      case 'english':
-      case 'language':
-        return FontAwesomeIcons.book;
-      case 'science':
-        return FontAwesomeIcons.flask;
-      case 'art':
-        return FontAwesomeIcons.palette;
-      default:
-        return FontAwesomeIcons.graduationCap;
     }
   }
 }

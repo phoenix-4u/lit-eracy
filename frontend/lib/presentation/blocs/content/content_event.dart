@@ -1,6 +1,6 @@
-// # File: frontend/lib/presentation/blocs/content/content_event.dart
+// # File: frontend/lib/presentation/blocs/content/content_event.dart (Fixed)
 
-import 'package:equatable/equatable.dart';
+part of 'content_bloc.dart';
 
 abstract class ContentEvent extends Equatable {
   const ContentEvent();
@@ -18,6 +18,10 @@ class LoadLessons extends ContentEvent {
   List<Object> get props => [grade ?? 0];
 }
 
-class LoadContent extends ContentEvent {}
+class LoadContent extends ContentEvent {
+  const LoadContent();
+}
 
-class RefreshContent extends ContentEvent {}
+class RefreshContent extends ContentEvent {
+  const RefreshContent();
+}

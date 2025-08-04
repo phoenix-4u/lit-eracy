@@ -1,4 +1,4 @@
-// # File: frontend/lib/domain/usecases/auth/login_usecase.dart
+// # File: frontend/lib/domain/usecases/auth/login_usecase.dart (Fixed)
 
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';

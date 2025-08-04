@@ -1,26 +1,24 @@
-import '../../../domain/entities/achievement.dart';
-import '../../../domain/entities/user_points.dart';
-// # File: frontend/lib/presentation/pages/student/student_dashboard_page.dart
+// # File: frontend/lib/presentation/pages/student/student_dashboard_page.dart (Fixed)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:confetti/confetti.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/app_router.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/achievements/achievements_bloc.dart';
-import '../../widgets/points_display.dart';
-import '../../widgets/streak_counter.dart';
+import '../../blocs/content/content_bloc.dart';
 import '../../widgets/achievement_badge.dart';
 import '../../widgets/lesson_card.dart';
-import '../../../domain/entities/lesson.dart';
 import '../../widgets/progress_card.dart';
-import '../../widgets/ai_assistant_button.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../domain/entities/lesson.dart';
 
 class StudentDashboardPage extends StatefulWidget {
-  const StudentDashboardPage({super.key});
+  final String userId;
+
+  const StudentDashboardPage({
+    super.key,
+    required this.userId,
+  });
 
   @override
   State<StudentDashboardPage> createState() => _StudentDashboardPageState();
@@ -28,38 +26,57 @@ class StudentDashboardPage extends StatefulWidget {
 
 class _StudentDashboardPageState extends State<StudentDashboardPage>
     with TickerProviderStateMixin {
-  late ConfettiController _confettiController;
-  late AnimationController _welcomeController;
+  late AnimationController _welcomeAnimationController;
+  late AnimationController _statsAnimationController;
   late Animation<double> _welcomeAnimation;
+  late Animation<double> _statsAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 3));
-
-    _welcomeController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+    // Initialize animations
+    _welcomeAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _statsAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
-    _welcomeAnimation = CurvedAnimation(
-      parent: _welcomeController,
-      curve: Curves.elasticOut,
-    );
+    _welcomeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _welcomeAnimationController,
+      curve: Curves.easeOutBack,
+    ));
 
-    _welcomeController.forward();
+    _statsAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _statsAnimationController,
+      curve: Curves.elasticOut,
+    ));
 
     // Load user dashboard data
-    context.read<UserBloc>().add(const LoadUserDashboard(1));
+    context.read<UserBloc>().add(LoadUserDashboard(userId: widget.userId));
     context.read<AchievementsBloc>().add(LoadAchievements());
+    context.read<ContentBloc>().add(const LoadLessons());
+
+    // Start animations
+    _welcomeAnimationController.forward();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _statsAnimationController.forward();
+    });
   }
 
   @override
   void dispose() {
-    _confettiController.dispose();
-    _welcomeController.dispose();
+    _welcomeAnimationController.dispose();
+    _statsAnimationController.dispose();
     super.dispose();
   }
 
@@ -67,107 +84,303 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.lightBackground,
-      body: Stack(
-        children: [
-          // Main Content
-          SafeArea(
-            child: BlocListener<AchievementsBloc, AchievementsState>(
-              listener: (context, state) {
-                if (state is AchievementUnlocked) {
-                  _confettiController.play();
-                  _showAchievementDialog(state.achievement);
-                }
-              },
-              child: CustomScrollView(
-                slivers: [
-                  // App Bar
-                  SliverAppBar(
-                    expandedHeight: 120,
-                    floating: false,
-                    pinned: true,
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: AppTheme.primaryGradient,
-                          ),
-                        ),
-                        child: SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: BlocBuilder<UserBloc, UserState>(
-                              builder: (context, state) {
-                                if (state is UserLoaded) {
-                                  return _buildWelcomeHeader(
-                                      state.user.fullName ?? 'Student');
-                                }
-                                return _buildWelcomeHeader('Student');
-                              },
-                            ),
-                          ),
-                        ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            context
+                .read<UserBloc>()
+                .add(LoadUserDashboard(userId: widget.userId));
+            context.read<AchievementsBloc>().add(LoadAchievements());
+            context.read<ContentBloc>().add(const LoadLessons());
+          },
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Custom App Bar
+              _buildCustomAppBar(),
+
+              // Welcome Section
+              SliverToBoxAdapter(
+                child: AnimatedBuilder(
+                  animation: _welcomeAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _welcomeAnimation.value,
+                      child: Opacity(
+                        opacity: _welcomeAnimation.value,
+                        child: _buildWelcomeSection(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // Stats Cards
+              SliverToBoxAdapter(
+                child: AnimatedBuilder(
+                  animation: _statsAnimation,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, 50 * (1 - _statsAnimation.value)),
+                      child: Opacity(
+                        opacity: _statsAnimation.value,
+                        child: _buildStatsSection(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // Achievement Section
+              SliverToBoxAdapter(
+                child: _buildAchievementsSection(),
+              ),
+
+              // Progress Section
+              SliverToBoxAdapter(
+                child: _buildProgressSection(),
+              ),
+
+              // Recent Lessons
+              SliverToBoxAdapter(
+                child: _buildRecentLessonsSection(),
+              ),
+
+              // AI Assistant Quick Access
+              SliverToBoxAdapter(
+                child: _buildAIAssistantSection(),
+              ),
+
+              // Bottom padding
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 32),
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: _buildFloatingActionButton(),
+    );
+  }
+
+  Widget _buildCustomAppBar() {
+    return SliverAppBar(
+      expandedHeight: 80,
+      floating: true,
+      snap: true,
+      backgroundColor: AppTheme.primaryBlue,
+      foregroundColor: Colors.white,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppTheme.primaryGradient,
+            ),
+          ),
+        ),
+        title: BlocBuilder<UserBloc, UserState>(
+          builder: (context, state) {
+            if (state is UserLoaded) {
+              final userName = state.user.email
+                  .split('@')
+                  .first; // Using email as fallback for name
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    child: Text(
+                      userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-
-                  // Dashboard Content
-                  SliverPadding(
-                    padding: const EdgeInsets.all(16),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        BlocBuilder<UserBloc, UserState>(
-                          builder: (context, state) {
-                            if (state is UserLoading) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (state is UserLoaded) {
-                              return _buildDashboardContent(state);
-                            } else if (state is UserError) {
-                              return Center(
-                                  child: Text('Error: ${state.message}'));
-                            }
-                            return const SizedBox();
-                          },
-                        ),
-                      ]),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Hi, ${userName.split(' ').first}!',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
+              );
+            }
+            return const Text(
+              'Dashboard',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
-            ),
-          ),
+            );
+          },
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () {
+            _showNotifications(context);
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings_outlined),
+          onPressed: () {
+            _navigateToSettings();
+          },
+        ),
+      ],
+    );
+  }
 
-          // Confetti
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirection: 1.5708, // radians for 90 degrees (downward)
-              particleDrag: 0.05,
-              emissionFrequency: 0.05,
-              numberOfParticles: 50,
-              gravity: 0.05,
-              shouldLoop: false,
-              colors: const [
-                AppTheme.primaryBlue,
-                AppTheme.primaryOrange,
-                AppTheme.primaryGreen,
-                AppTheme.primaryPurple,
-                AppTheme.primaryYellow,
+  Widget _buildWelcomeSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primaryBlue.withValues(alpha: 0.1),
+            AppTheme.primaryPurple.withValues(alpha: 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.primaryBlue.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  FontAwesomeIcons.bookOpen,
+                  color: AppTheme.primaryBlue,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ready to Learn?',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryText,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Continue your AI literacy journey',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.secondaryText,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          BlocBuilder<UserBloc, UserState>(
+            builder: (context, state) {
+              if (state is UserLoaded) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildMiniStatCard(
+                        'Study Time',
+                        '2h 30m',
+                        FontAwesomeIcons.clock,
+                        AppTheme.successGreen,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildMiniStatCard(
+                        'This Week',
+                        '5 lessons',
+                        FontAwesomeIcons.calendar,
+                        AppTheme.primaryOrange,
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniStatCard(
+      String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.secondaryText,
+                  ),
+                ),
               ],
-            ),
-          ),
-
-          // Floating AI Assistant
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: AIAssistantButton(
-              onTap: () => Navigator.of(context).pushNamed(AppRouter.aiChat),
             ),
           ),
         ],
@@ -175,47 +388,568 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildWelcomeHeader(String userName) {
-    return AnimatedBuilder(
-      animation: _welcomeAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _welcomeAnimation.value,
-          child: Row(
+  Widget _buildStatsSection() {
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        if (state is UserLoaded) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Points',
+                    '${state.points}',
+                    FontAwesomeIcons.star,
+                    AppTheme.achievementGold,
+                    AppTheme.achievementGold.withValues(alpha: 0.1),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'Level',
+                    '${state.level}',
+                    FontAwesomeIcons.trophy,
+                    AppTheme.successGreen,
+                    AppTheme.successGreen.withValues(alpha: 0.1),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'Streak',
+                    '${state.streakDays}',
+                    FontAwesomeIcons.fire,
+                    AppTheme.primaryOrange,
+                    AppTheme.primaryOrange.withValues(alpha: 0.1),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return _buildSkeletonStats();
+      },
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color,
+      Color backgroundColor) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.secondaryText,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkeletonStats() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: List.generate(3, (index) {
+          return Expanded(
+            child: Container(
+              margin: EdgeInsets.only(right: index < 2 ? 12 : 0),
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildAchievementsSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    FontAwesomeIcons.medal,
+                    color: AppTheme.achievementGold,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Achievements',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ],
+              ),
+              TextButton(
+                onPressed: () {
+                  _navigateToAchievements();
+                },
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          BlocBuilder<AchievementsBloc, AchievementsState>(
+            builder: (context, state) {
+              if (state is AchievementsLoaded) {
+                if (state.achievements.isEmpty) {
+                  return _buildEmptyAchievements();
+                }
+                return SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: state.achievements.take(5).length,
+                    itemBuilder: (context, index) {
+                      final achievement = state.achievements[index];
+                      return Container(
+                        margin: EdgeInsets.only(right: index < 4 ? 12 : 0),
+                        child: AchievementBadge(
+                          achievement: achievement,
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+              return _buildSkeletonAchievements();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyAchievements() {
+    return Container(
+      height: 120,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 2,
+          style: BorderStyle.solid,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.trophy,
+            color: Colors.grey.shade400,
+            size: 32,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Complete lessons to earn achievements!',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkeletonAchievements() {
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return Container(
+            width: 80,
+            margin: EdgeInsets.only(right: index < 4 ? 12 : 0),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProgressSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                FontAwesomeIcons.chartLine,
+                color: AppTheme.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Learning Progress',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Welcome back,',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withAlpha((255 * 0.9).round()),
-                          ),
-                    ),
-                    Text(
-                      userName,
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
-                  ],
+                child: ProgressCard(
+                  subject: 'Reading',
+                  progress: 0.75,
                 ),
               ),
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha((255 * 0.2).round()),
-                  borderRadius: BorderRadius.circular(16),
+              SizedBox(width: 12),
+              Expanded(
+                child: ProgressCard(
+                  subject: 'Math',
+                  progress: 0.60,
                 ),
-                child: const Icon(
-                  FontAwesomeIcons.user,
-                  color: Colors.white,
-                  size: 30,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Row(
+            children: [
+              Expanded(
+                child: ProgressCard(
+                  subject: 'Science',
+                  progress: 0.45,
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: ProgressCard(
+                  subject: 'AI Basics',
+                  progress: 0.30,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentLessonsSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    FontAwesomeIcons.bookOpen,
+                    color: AppTheme.primaryGreen,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Continue Learning',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ],
+              ),
+              TextButton(
+                onPressed: () {
+                  _navigateToAllLessons();
+                },
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          BlocBuilder<ContentBloc, ContentState>(
+            builder: (context, state) {
+              if (state is ContentLoaded) {
+                if (state.lessons.isEmpty) {
+                  return _buildEmptyLessons();
+                }
+                return Column(
+                  children: state.lessons.take(3).map((lesson) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: LessonCard(
+                        lesson: lesson,
+                        onTap: () {
+                          _navigateToLesson(lesson);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                );
+              }
+              return _buildSkeletonLessons();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyLessons() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 2,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            FontAwesomeIcons.bookOpen,
+            color: Colors.grey.shade400,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No lessons available',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.grey.shade600,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Check back later for new content',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade500,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkeletonLessons() {
+    return Column(
+      children: List.generate(3, (index) {
+        return Container(
+          height: 80,
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildAIAssistantSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primaryPurple.withValues(alpha: 0.1),
+            AppTheme.imaginationSparks.withValues(alpha: 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.primaryPurple.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryPurple.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              FontAwesomeIcons.robot,
+              color: AppTheme.primaryPurple,
+              size: 32,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'AI Learning Assistant',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryText,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Ask questions and get personalized help',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.secondaryText,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _navigateToAIChat();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryPurple,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Chat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    return FloatingActionButton.extended(
+      onPressed: () {
+        _showQuickActions(context);
+      },
+      backgroundColor: AppTheme.primaryBlue,
+      foregroundColor: Colors.white,
+      icon: const Icon(FontAwesomeIcons.plus),
+      label: const Text('Quick Start'),
+    );
+  }
+
+  // Navigation Methods
+  void _navigateToSettings() {
+    // Navigator.pushNamed(context, '/settings');
+  }
+
+  void _navigateToAchievements() {
+    // Navigator.pushNamed(context, '/achievements');
+  }
+
+  void _navigateToAllLessons() {
+    // Navigator.pushNamed(context, '/lessons');
+  }
+
+  void _navigateToLesson(Lesson lesson) {
+    // Navigator.pushNamed(context, '/lesson', arguments: lesson);
+  }
+
+  void _navigateToAIChat() {
+    // Navigator.pushNamed(context, '/ai-chat');
+  }
+
+  // Dialog Methods
+  void _showNotifications(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          height: 300,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Notifications',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.bell,
+                        color: Colors.grey.shade400,
+                        size: 48,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No new notifications',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -225,338 +959,99 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildDashboardContent(UserLoaded state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Points Display
-        if (state.points != null) _buildPointsSection(state.points!),
-
-        const SizedBox(height: 24),
-
-        // Streak Counter
-        if (state.points != null)
-          StreakCounter(
-            currentStreak: state.points!.streakDays,
-            longestStreak: state.points!
-                .streakDays, // No longestStreak, use streakDays or remove if not needed
-            onStreakTap: () => _showStreakInfo(),
-          ),
-
-        const SizedBox(height: 24),
-
-        // Achievements Section
-        _buildAchievementsSection(),
-
-        const SizedBox(height: 24),
-
-        // Recommended Lessons
-        _buildRecommendedLessons(),
-
-        const SizedBox(height: 24),
-
-        // Continue Learning
-        _buildContinueLearning(),
-
-        const SizedBox(height: 100), // Space for floating button
-      ],
-    );
-  }
-
-  Widget _buildPointsSection(UserPoints points) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Your Progress',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: PointsDisplay(
-                title: 'Knowledge\nGems',
-                points: points.knowledgeGems,
-                color: AppTheme.knowledgeGems,
-                icon: FontAwesomeIcons.gem,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: PointsDisplay(
-                title: 'Word\nCoins',
-                points: points.wordCoins,
-                color: AppTheme.wordCoins,
-                icon: FontAwesomeIcons.coins,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: PointsDisplay(
-                title: 'Imagination\nSparks',
-                points: points.imaginationSparks,
-                color: AppTheme.imaginationSparks,
-                icon: FontAwesomeIcons.lightbulb,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAchievementsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Achievements',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRouter.achievements),
-              child: const Text('View All'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        BlocBuilder<AchievementsBloc, AchievementsState>(
-          builder: (context, state) {
-            if (state is AchievementsLoaded) {
-              return SizedBox(
-                height: 120,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: (state.achievements.length + 2).clamp(0, 5),
-                  itemBuilder: (context, index) {
-                    if (index < state.achievements.length) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: AchievementBadge(
-                          achievement: state.achievements[index],
-                          onTap: () =>
-                              _showAchievementDialog(state.achievements[index]),
-                        ),
-                      );
-                    } else {
-                      return const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: AchievementBadge(
-                          achievement: Achievement(
-                            id: -1,
-                            title: 'Locked',
-                            description: 'Unlock to reveal!',
-                            iconName: 'lock',
-                            pointsRequired: 0,
-                            category: 'locked',
-                            isUnlocked: false,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              );
-            }
-            return const SizedBox(height: 120);
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecommendedLessons() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Recommended for You',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 160,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
+  void _showQuickActions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LessonCard(
-                lesson: Lesson(
-                  id: 1,
-                  title: 'Fun with Numbers',
-                  description: 'A fun math lesson.',
-                  content: '',
-                  grade: 2,
-                  subject: 'Math',
-                  difficulty: 'Easy',
-                  estimatedDuration: 10,
-                  createdAt: DateTime.now(),
-                ),
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRouter.lesson,
-                  arguments: {'lessonId': 1},
-                ),
+              Text(
+                'Quick Actions',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-              LessonCard(
-                lesson: Lesson(
-                  id: 2,
-                  title: 'Letter Adventures',
-                  description: 'An English lesson.',
-                  content: '',
-                  grade: 2,
-                  subject: 'English',
-                  difficulty: 'Easy',
-                  estimatedDuration: 8,
-                  createdAt: DateTime.now(),
-                ),
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRouter.lesson,
-                  arguments: {'lessonId': 2},
-                ),
+              const SizedBox(height: 20),
+              _buildQuickActionTile(
+                'Start New Lesson',
+                'Begin a new learning session',
+                FontAwesomeIcons.play,
+                AppTheme.primaryBlue,
+                () {
+                  Navigator.pop(context);
+                  _navigateToAllLessons();
+                },
               ),
-              LessonCard(
-                lesson: Lesson(
-                  id: 3,
-                  title: 'Science Wonders',
-                  description: 'A science lesson.',
-                  content: '',
-                  grade: 2,
-                  subject: 'Science',
-                  difficulty: 'Medium',
-                  estimatedDuration: 12,
-                  createdAt: DateTime.now(),
-                ),
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRouter.lesson,
-                  arguments: {'lessonId': 3},
-                ),
+              _buildQuickActionTile(
+                'Take Quiz',
+                'Test your knowledge',
+                FontAwesomeIcons.circleQuestion, // Fixed deprecated icon
+                AppTheme.primaryGreen,
+                () {
+                  Navigator.pop(context);
+                  // Navigate to quiz
+                },
               ),
+              _buildQuickActionTile(
+                'Chat with AI',
+                'Get help from AI assistant',
+                FontAwesomeIcons.robot,
+                AppTheme.primaryPurple,
+                () {
+                  Navigator.pop(context);
+                  _navigateToAIChat();
+                },
+              ),
+              const SizedBox(height: 20),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
-  Widget _buildContinueLearning() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Continue Learning',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
-        ProgressCard(
-          progress: _mockProgressData(),
-          onTap: () => Navigator.of(context).pushNamed(
-            AppRouter.lesson,
-            arguments: {'lessonId': 4},
+  Widget _buildQuickActionTile(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 24,
           ),
         ),
-      ],
-    );
-  }
-
-  dynamic _mockProgressData() {
-    return {
-      'title': 'Counting to 20',
-      'subject': 'Math',
-      'estimatedDuration': 7,
-      'completionPercentage': 65.0,
-    };
-  }
-
-  void _showAchievementDialog(dynamic achievement) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              FontAwesomeIcons.trophy,
-              size: 60,
-              color: AppTheme.achievementGold,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Achievement Unlocked!',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              achievement?.name ?? 'New Achievement',
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              achievement?.description ?? 'Keep up the great work!',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Awesome!'),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showStreakInfo() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              FontAwesomeIcons.fire,
-              size: 60,
-              color: AppTheme.primaryOrange,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Learning Streak',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Keep learning every day to maintain your streak and earn bonus points!',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it!'),
-          ),
-        ],
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        tileColor: Colors.grey.shade50,
       ),
     );
   }

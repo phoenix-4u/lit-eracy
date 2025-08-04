@@ -1,60 +1,77 @@
-// # File: frontend/lib/presentation/blocs/user/user_bloc.dart
+// # File: frontend/lib/presentation/blocs/user/user_bloc.dart (Fixed)
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../domain/entities/user.dart';
-import '../../../domain/entities/user_points.dart';
+import '../../../domain/usecases/user/get_user_profile_usecase.dart';
 
 part 'user_event.dart';
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
-  UserBloc() : super(UserInitial()) {
+  final GetUserProfileUseCase getUserProfileUseCase;
+
+  UserBloc({required this.getUserProfileUseCase}) : super(const UserInitial()) {
+    on<LoadUserProfile>(_onLoadUserProfile);
     on<LoadUserDashboard>(_onLoadUserDashboard);
+    on<UpdateUserProfile>(_onUpdateUserProfile);
     on<UpdateUserPoints>(_onUpdateUserPoints);
+  }
+
+  Future<void> _onLoadUserProfile(
+    LoadUserProfile event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(const UserLoading());
+
+    final result = await getUserProfileUseCase(
+      GetUserProfileParams(userId: event.userId),
+    );
+
+    result.fold(
+      (failure) => emit(UserError(message: failure.message)),
+      (user) => emit(UserLoaded(user: user)),
+    );
   }
 
   Future<void> _onLoadUserDashboard(
     LoadUserDashboard event,
     Emitter<UserState> emit,
   ) async {
-    emit(UserLoading());
+    emit(const UserLoading());
 
-    // Mock user data for now
-    final user = User(
-      id: 1,
-      username: 'student1',
-      email: 'student@example.com',
-      fullName: 'Alex Johnson',
-      age: 8,
-      grade: 2,
-      role: 'student',
-      isActive: true,
-      createdAt: DateTime.now(),
+    final result = await getUserProfileUseCase(
+      GetUserProfileParams(userId: event.userId),
     );
 
-    final points = UserPoints(
-      userId: 1,
-      knowledgeGems: 150,
-      wordCoins: 75,
-      imaginationSparks: 30,
-      totalPoints: 255,
-      streakDays: 5,
-      lastActivityDate: DateTime.now(),
-      level: 3,
-      experiencePoints: 255,
+    result.fold(
+      (failure) => emit(UserError(message: failure.message)),
+      (user) => emit(UserLoaded(
+        user: user,
+        points: 150, // Mock data - in real app, fetch from gamification service
+        level: 3,
+        streakDays: 7,
+      )),
     );
-
-    emit(UserLoaded(user: user, points: points));
   }
 
-  void _onUpdateUserPoints(
+  Future<void> _onUpdateUserProfile(
+    UpdateUserProfile event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(const UserLoading());
+    // Implementation for updating user profile
+    // This would require an UpdateUserProfileUseCase
+    emit(const UserError(message: 'Update user profile not implemented'));
+  }
+
+  Future<void> _onUpdateUserPoints(
     UpdateUserPoints event,
     Emitter<UserState> emit,
-  ) {
-    if (state is UserLoaded) {
-      final currentState = state as UserLoaded;
+  ) async {
+    final currentState = state;
+    if (currentState is UserLoaded) {
       emit(currentState.copyWith(points: event.points));
     }
   }
