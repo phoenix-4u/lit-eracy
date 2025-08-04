@@ -34,8 +34,10 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(jsonData['lessons'] ?? []);
+        // final jsonData = json.decode(response.body);
+        // return List<Map<String, dynamic>>.from(jsonData['lessons'] ?? []);
+        final List jsonList = json.decode(response.body) as List;
+        return List<Map<String, dynamic>>.from(jsonList);
       } else {
         throw ServerException(
             'Failed to fetch lessons: ${response.statusCode}');
@@ -215,7 +217,8 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw const NetworkException('Network error while getting content progress');
+      throw const NetworkException(
+          'Network error while getting content progress');
     }
   }
 
@@ -264,7 +267,8 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       if (e is ServerException) {
         rethrow;
       }
-      throw const NetworkException('Network error while getting user achievements');
+      throw const NetworkException(
+          'Network error while getting user achievements');
     }
   }
 }

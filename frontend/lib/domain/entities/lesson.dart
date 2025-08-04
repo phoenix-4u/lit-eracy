@@ -37,19 +37,21 @@ class Lesson extends Equatable {
     return Lesson(
       id: json['id'] as int,
       title: json['title'] as String,
-      description: json['description'] as String,
-      content: json['content'] as String,
-      grade: json['grade'] as int,
+      // Backend uses 'subject' but you may want that in description
+      description: json['subject'] as String? ?? '',
+      // No 'content' field in JSON: use empty string or map a field if available
+      content: json['content_data'] as String? ?? '',
+      // Map 'grade_level' to your 'grade' property
+      grade: json['grade_level'] as int,
       subject: json['subject'] as String,
-      difficulty: json['difficulty'] as String,
+      // Map 'difficulty_level' (int) to your 'difficulty' (String)
+      difficulty: json['difficulty_level']?.toString() ?? '1',
       estimatedDuration: json['estimated_duration'] as int,
-      objectives: List<String>.from(json['objectives'] as List? ?? []),
-      imageUrl: json['image_url'] as String?,
-      isCompleted: json['is_completed'] as bool? ?? false,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
-          : null,
+      objectives: const [],
+      imageUrl: null,
+      isCompleted: false,
+      createdAt: DateTime.now(),
+      updatedAt: null,
     );
   }
 

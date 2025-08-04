@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/content/content_bloc.dart';
 import '../blocs/achievements/achievements_bloc.dart';
 import '../../core/theme/app_theme.dart';
+import './lesson_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -195,7 +196,11 @@ class _HomePageState extends State<HomePage> {
                             subtitle: Text(lesson.description),
                             trailing: const Icon(Icons.arrow_forward_ios),
                             onTap: () {
-                              // Navigate to lesson detail
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => LessonPage(lesson: lesson),
+                                ),
+                              );
                             },
                           ),
                         );
