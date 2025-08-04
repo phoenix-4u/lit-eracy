@@ -44,8 +44,14 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-async def authenticate_user(db: AsyncSession, username: str, password: str):
-    result = await db.execute(select(User).where(User.username == username))
+# Updated authenticate_user function to support both email and username
+async def authenticate_user(db: AsyncSession, email_or_username: str, password: str):
+    # Try to find user by email first, then by username
+    result = await db.execute(
+        select(User).where(
+            (User.email == email_or_username) | (User.username == email_or_username)
+        )
+    )
     user = result.scalar_one_or_none()
     if not user:
         return False
@@ -121,11 +127,12 @@ async def login_for_access_token(
 
 @router.post("/login", response_model=Token)
 async def login(user_credentials: UserLogin, db: AsyncSession = Depends(get_async_db)):
-    user = await authenticate_user(db, user_credentials.username, user_credentials.password)
+    # Changed from user_credentials.username to user_credentials.email
+    user = await authenticate_user(db, user_credentials.email, user_credentials.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
+            detail="Incorrect email or password"
         )
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
