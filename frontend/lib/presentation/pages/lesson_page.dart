@@ -1,4 +1,4 @@
-// File: frontend/lib/presentation/pages/lesson_page.dart
+// File: /lib/presentation/pages/lesson_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -28,33 +28,44 @@ class _LessonPageState extends State<LessonPage> {
   Future<void> fetchTasks() async {
     setState(() => loading = true);
     try {
-      final response = await _apiService.get('/api/tasks/${widget.lesson.id}');
+      final Map<String, dynamic> response =
+          await _apiService.get('/api/tasks/lesson/${widget.lesson.id}');
       if (!mounted) return;
 
-      // --- THIS IS THE FIX ---
-      // 1. Get the data from the response.
-      final responseData = response['data'];
+      // The API service wraps List responses in {'data': List}
+      final List<dynamic> taskList = (response['data'] as List<dynamic>?) ?? [];
 
-      // 2. Check if the data is actually a List before trying to use it.
-      if (responseData is List) {
-        // 3. If it is, update the state.
-        setState(() {
-          tasks = responseData;
-          loading = false;
-        });
-      } else {
-        // 4. If it's null or not a list, treat it as an empty list to prevent crashing.
-        setState(() {
-          tasks = [];
-          loading = false;
-        });
-      }
-      // --- END OF FIX ---
+      setState(() {
+        tasks = taskList;
+        loading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An unexpected error occurred: $e')),
+        SnackBar(content: Text('Error loading tasks: $e')),
+      );
+      await generateTaskForLesson();
+    }
+  }
+
+  Future<void> generateTaskForLesson() async {
+    try {
+      setState(() => loading = true);
+      await _apiService.post(
+        '/api/lessons/${widget.lesson.id}/generate-task',
+        {},
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Generated new task!')),
+      );
+      await fetchTasks();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate task: $e')),
       );
     }
   }
@@ -75,17 +86,17 @@ class _LessonPageState extends State<LessonPage> {
     } on NetworkException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network Error: ${e.message}')),
+        SnackBar(content: Text('Network error: ${e.message}')),
       );
     } on AuthenticationException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Authentication Error: ${e.message}')),
+        SnackBar(content: Text('Auth error: ${e.message}')),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An unexpected error occurred: $e')),
+        SnackBar(content: Text('Unexpected error: $e')),
       );
     }
   }
@@ -93,22 +104,42 @@ class _LessonPageState extends State<LessonPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.lesson.title)),
+      appBar: AppBar(
+        title: Text(widget.lesson.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: generateTaskForLesson,
+            tooltip: 'Generate Task',
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: fetchTasks,
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (widget.lesson.content.isNotEmpty) Text(widget.lesson.content),
+            if (widget.lesson.content.isNotEmpty)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(widget.lesson.content),
+                ),
+              ),
             const SizedBox(height: 24),
             Text('Tasks:', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            loading
-                ? const Center(child: CircularProgressIndicator())
-                : tasks.isEmpty
-                    ? const Text('No tasks for this lesson.')
-                    : Expanded(
-                        child: ListView.builder(
+            Expanded(
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : tasks.isEmpty
+                      ? Center(child: Text('No tasks for this lesson.'))
+                      : ListView.builder(
                           itemCount: tasks.length,
                           itemBuilder: (context, index) {
                             final task = tasks[index] as Map<String, dynamic>;
@@ -131,7 +162,7 @@ class _LessonPageState extends State<LessonPage> {
                             );
                           },
                         ),
-                      ),
+            ),
           ],
         ),
       ),
