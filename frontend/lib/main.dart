@@ -1,4 +1,4 @@
-// # File: frontend/lib/main.dart
+// File: frontend/lib/main.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +19,10 @@ import 'presentation/pages/auth/login_page.dart';
 import 'presentation/pages/auth/registration_page.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/ai_page.dart';
+
+// FIX: Import TaskPage and LessonPage for dynamic routing
+import 'presentation/pages/lesson_page.dart';
+import 'presentation/pages/task_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,16 +81,43 @@ class MyApp extends StatelessWidget {
         // The 'home' property defines the very first screen.
         home: const SplashPage(),
 
-        // FIX: Add the 'routes' property to define all named navigation paths.
+        // FIX: Add the 'routes' property to define all named static navigation paths.
         routes: {
           '/login': (context) => const LoginPage(),
           '/register': (context) => const RegistrationPage(),
           '/home': (context) => const HomePage(),
-          '/ai': (context) => const AIPage(
-                lessonId: 0,
-              ),
-          // Add other pages here as you create them, e.g.:
-          // '/student-dashboard': (context) => const StudentDashboardPage(),
+          '/ai': (context) => const AIPage(lessonId: 0),
+          // Add other static pages here as needed
+        },
+
+        // FIX: Handle dynamic & argument-based routes (Lesson & Task pages)
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            case LessonPage.routeName:
+              final args = settings.arguments as Map<String, dynamic>?;
+              if (args == null || !args.containsKey('lesson')) {
+                return MaterialPageRoute(
+                  builder: (_) => const HomePage(),
+                );
+              }
+              return MaterialPageRoute(
+                builder: (_) => LessonPage(lesson: args['lesson']),
+              );
+
+            case TaskPage.routeName:
+              final args = settings.arguments as Map<String, dynamic>?;
+              if (args == null || !args.containsKey('taskId')) {
+                return MaterialPageRoute(
+                  builder: (_) => const HomePage(),
+                );
+              }
+              return MaterialPageRoute(
+                builder: (_) => TaskPage(taskId: args['taskId'] as int),
+              );
+
+            default:
+              return null; // Use existing routes map or fallback
+          }
         },
       ),
     );
