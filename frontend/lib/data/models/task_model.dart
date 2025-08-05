@@ -1,40 +1,38 @@
-import '../../domain/entities/task.dart' as entity;
+// ## File: frontend/lib/data/models/task_model.dart (Final Corrected Version)
 
-class TaskModel {
-  final int id;
-  final int lessonId;
-  final String title;
-  final String description;
-  final int isCompleted;
+import '../../domain/entities/task.dart'; // Import your actual Task entity
 
-  TaskModel(
-      {required this.id,
-      required this.lessonId,
-      required this.title,
-      required this.description,
-      required this.isCompleted});
+// TaskModel is the concrete data object that extends the abstract Task entity.
+class TaskModel extends Task {
+  // --- THIS IS THE FIX ---
+  // This constructor now uses 'super' to pass the EXACT parameters
+  // required by your Task entity's constructor.
+  const TaskModel({
+    required super.id,
+    required super.title,
+    required super.description,
+    required super.isCompleted,
+    required super.lessonId,
+  });
 
-  factory TaskModel.fromJson(Map<String, dynamic> json) => TaskModel(
-        id: json['id'] as int,
-        lessonId: json['lesson_id'] as int,
-        title: json['title'] as String,
-        description: json['description'] as String,
-        isCompleted: json['is_completed'] as int,
-      );
+  // This factory constructor parses the JSON from your AI service
+  // and creates a TaskModel instance.
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
+      // We assume the JSON keys from the AI match these names.
+      // e.g., { "id": 1, "title": "...", "description": "...", "is_completed": false, "lesson_id": 101 }
+      id: json['id'] as int,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      isCompleted: json['is_completed'] as bool? ??
+          false, // Safely handle null with a default
+      lessonId: json['lesson_id'] as int,
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'lesson_id': lessonId,
-        'title': title,
-        'description': description,
-        'is_completed': isCompleted,
-      };
-
-  entity.Task toEntity() => entity.Task(
-        id: id,
-        lessonId: lessonId,
-        title: title,
-        description: description,
-        isCompleted: isCompleted == 1,
-      );
+  // A helper method to convert the model to the entity type.
+  // Because TaskModel extends Task, it can just return itself.
+  Task toEntity() {
+    return this;
+  }
 }

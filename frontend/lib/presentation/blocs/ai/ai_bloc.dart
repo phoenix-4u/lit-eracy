@@ -1,9 +1,8 @@
-// File: frontend/lib/presentation/blocs/ai/ai_bloc.dart
+// frontend/lib/presentation/blocs/ai/ai_bloc.dart
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/usecases/ai/generate_task_for_lesson.dart';
 import '../../../domain/entities/task.dart';
-import '../../../core/error/failures.dart';
 
 part 'ai_event.dart';
 part 'ai_state.dart';

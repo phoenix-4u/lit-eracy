@@ -5,12 +5,14 @@ class Task extends Equatable {
   final String title;
   final String description;
   final bool isCompleted;
+  final int lessonId;
 
   const Task({
     required this.id,
     required this.title,
     required this.description,
     required this.isCompleted,
+    required this.lessonId,
   });
 
   @override

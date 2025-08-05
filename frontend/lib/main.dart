@@ -82,7 +82,9 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginPage(),
           '/register': (context) => const RegistrationPage(),
           '/home': (context) => const HomePage(),
-          '/ai': (context) => const AIPage(),
+          '/ai': (context) => const AIPage(
+                lessonId: 0,
+              ),
           // Add other pages here as you create them, e.g.:
           // '/student-dashboard': (context) => const StudentDashboardPage(),
         },

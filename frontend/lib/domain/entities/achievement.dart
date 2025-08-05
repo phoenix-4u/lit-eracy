@@ -29,17 +29,23 @@ class Achievement extends Equatable {
 
   factory Achievement.fromJson(Map<String, dynamic> json) {
     return Achievement(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      iconName: json['icon_name'] as String,
-      pointsRequired: json['points_required'] as int,
-      category: json['category'] as String,
+      // For non-nullable fields, provide a sensible default if the key is missing or null.
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? 'Unknown Achievement',
+      description: json['description'] as String? ?? '',
+      iconName: json['icon_name'] as String? ?? 'default_icon',
+      pointsRequired: json['points_required'] as int? ?? 0,
+      category: json['category'] as String? ?? 'General',
+
+      // Your existing null-safe checks are already good.
       isUnlocked: json['is_unlocked'] as bool? ?? false,
       unlockedAt: json['unlocked_at'] != null
-          ? DateTime.parse(json['unlocked_at'] as String)
+          ? DateTime.tryParse(
+              json['unlocked_at'] as String) // Use tryParse for safety
           : null,
       rarity: json['rarity'] as String? ?? 'bronze',
+
+      // Your nullable Map check is also good.
       criteria: json['criteria'] as Map<String, dynamic>?,
     );
   }

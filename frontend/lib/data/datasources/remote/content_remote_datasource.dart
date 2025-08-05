@@ -1,4 +1,4 @@
-// # File: frontend/lib/data/datasources/remote/content_remote_datasource.dart
+// ## File: frontend/lib/data/datasources/remote/content_remote_datasource.dart (Final Corrected Version)
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -24,6 +24,40 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
 
   ContentRemoteDataSourceImpl(this.client);
 
+  /// A robust helper function to safely parse any response expected to contain a list.
+  /// It handles nulls, empty bodies, and different JSON structures (root list vs. nested list).
+  List<Map<String, dynamic>> _safeParseList(http.Response response,
+      {String? key}) {
+    if (response.statusCode == 200) {
+      if (response.body.isEmpty) {
+        return []; // Return empty list if body is empty
+      }
+
+      final dynamic decodedJson = json.decode(response.body);
+
+      // Case 1: The entire response is a JSON array.
+      if (decodedJson is List) {
+        return List<Map<String, dynamic>>.from(decodedJson);
+      }
+
+      // Case 2: The list is nested under a specific key, e.g., {"lessons": [...]}.
+      if (key != null &&
+          decodedJson is Map<String, dynamic> &&
+          decodedJson.containsKey(key)) {
+        final dynamic dataList = decodedJson[key];
+        // Ensure the nested data is a list and handle if it's null.
+        if (dataList is List) {
+          return List<Map<String, dynamic>>.from(dataList);
+        }
+      }
+
+      // If the format is unexpected, return an empty list to prevent crashes.
+      return [];
+    } else {
+      throw ServerException('Failed to fetch data: ${response.statusCode}');
+    }
+  }
+
   @override
   Future<List<Map<String, dynamic>>> getLessons({int? grade}) async {
     try {
@@ -32,20 +66,10 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
         Uri.parse('${ApiConfig.lessonsEndpoint}$queryParams'),
         headers: ApiConfig.defaultHeaders,
       );
-
-      if (response.statusCode == 200) {
-        // final jsonData = json.decode(response.body);
-        // return List<Map<String, dynamic>>.from(jsonData['lessons'] ?? []);
-        final List jsonList = json.decode(response.body) as List;
-        return List<Map<String, dynamic>>.from(jsonList);
-      } else {
-        throw ServerException(
-            'Failed to fetch lessons: ${response.statusCode}');
-      }
+      // FIX: Use the robust helper function. Assumes the API returns a root list.
+      return _safeParseList(response);
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while fetching lessons');
     }
   }
@@ -57,18 +81,10 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
         Uri.parse(ApiConfig.achievementsEndpoint),
         headers: ApiConfig.defaultHeaders,
       );
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(jsonData['achievements'] ?? []);
-      } else {
-        throw ServerException(
-            'Failed to fetch achievements: ${response.statusCode}');
-      }
+      // FIX: Use the robust helper, expecting a nested list like {"achievements": [...]}.
+      return _safeParseList(response, key: 'achievements');
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while fetching achievements');
     }
   }
@@ -80,18 +96,10 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
         Uri.parse('${ApiConfig.baseUrl}${ApiConfig.apiVersion}/content'),
         headers: ApiConfig.defaultHeaders,
       );
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(jsonData['content'] ?? []);
-      } else {
-        throw ServerException(
-            'Failed to fetch content: ${response.statusCode}');
-      }
+      // FIX: Use the robust helper, expecting a nested list like {"content": [...]}.
+      return _safeParseList(response, key: 'content');
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while fetching content');
     }
   }
@@ -113,9 +121,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
         throw ServerException('Failed to fetch lesson: ${response.statusCode}');
       }
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while fetching lesson');
     }
   }
@@ -138,9 +144,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
             'Failed to fetch content: ${response.statusCode}');
       }
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while fetching content');
     }
   }
@@ -165,9 +169,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
             'Failed to update progress: ${response.statusCode}');
       }
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while updating progress');
     }
   }
@@ -189,9 +191,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
             'Failed to get user progress: ${response.statusCode}');
       }
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while getting user progress');
     }
   }
@@ -205,18 +205,10 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
             '${ApiConfig.baseUrl}${ApiConfig.apiVersion}/progress/content/$contentId'),
         headers: ApiConfig.defaultHeaders,
       );
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(jsonData['progress'] ?? []);
-      } else {
-        throw ServerException(
-            'Failed to get content progress: ${response.statusCode}');
-      }
+      // FIX: Use the robust helper, expecting a nested list like {"progress": [...]}.
+      return _safeParseList(response, key: 'progress');
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException(
           'Network error while getting content progress');
     }
@@ -240,9 +232,7 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
             'Failed to unlock achievement: ${response.statusCode}');
       }
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException('Network error while unlocking achievement');
     }
   }
@@ -255,18 +245,10 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
             '${ApiConfig.baseUrl}${ApiConfig.apiVersion}/achievements/user/$userId'),
         headers: ApiConfig.defaultHeaders,
       );
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(jsonData['achievements'] ?? []);
-      } else {
-        throw ServerException(
-            'Failed to get user achievements: ${response.statusCode}');
-      }
+      // FIX: Use the robust helper, expecting a nested list like {"achievements": [...]}.
+      return _safeParseList(response, key: 'achievements');
     } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
+      if (e is ServerException) rethrow;
       throw const NetworkException(
           'Network error while getting user achievements');
     }

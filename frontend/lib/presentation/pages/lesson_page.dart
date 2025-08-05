@@ -31,28 +31,25 @@ class _LessonPageState extends State<LessonPage> {
       final response = await _apiService.get('/api/tasks/${widget.lesson.id}');
       if (!mounted) return;
 
-      setState(() {
-        tasks = response['data'] as List<dynamic>;
-        loading = false;
-      });
-    } on ServerException catch (e) {
-      if (!mounted) return;
-      setState(() => loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message}')),
-      );
-    } on NetworkException catch (e) {
-      if (!mounted) return;
-      setState(() => loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network Error: ${e.message}')),
-      );
-    } on AuthenticationException catch (e) {
-      if (!mounted) return;
-      setState(() => loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Authentication Error: ${e.message}')),
-      );
+      // --- THIS IS THE FIX ---
+      // 1. Get the data from the response.
+      final responseData = response['data'];
+
+      // 2. Check if the data is actually a List before trying to use it.
+      if (responseData is List) {
+        // 3. If it is, update the state.
+        setState(() {
+          tasks = responseData;
+          loading = false;
+        });
+      } else {
+        // 4. If it's null or not a list, treat it as an empty list to prevent crashing.
+        setState(() {
+          tasks = [];
+          loading = false;
+        });
+      }
+      // --- END OF FIX ---
     } catch (e) {
       if (!mounted) return;
       setState(() => loading = false);
