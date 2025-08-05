@@ -8,6 +8,7 @@ import '../../core/theme/app_theme.dart';
 import './lesson_page.dart';
 
 class HomePage extends StatefulWidget {
+  static const String routeName = '/';
   const HomePage({super.key});
 
   @override

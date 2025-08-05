@@ -1,87 +1,48 @@
-// File: frontend/lib/core/utils/app_router.dart
+// File: /lib/core/utils/app_router.dart
 
 import 'package:flutter/material.dart';
-import '../../presentation/pages/splash/splash_page.dart';
-import '../../presentation/pages/auth/login_page.dart';
-import '../../presentation/pages/auth/registration_page.dart';
-import '../../presentation/pages/student/student_dashboard_page.dart';
-import '../../presentation/pages/student/lesson_page.dart';
-import '../../presentation/pages/student/quiz_page.dart';
-import '../../presentation/pages/student/achievements_page.dart';
-import '../../presentation/pages/student/ai_chat_page.dart';
-import '../../presentation/pages/parent/parent_dashboard_page.dart';
-import '../../presentation/pages/teacher/teacher_dashboard_page.dart';
+import '../../domain/entities/lesson.dart'; // <-- Import Lesson
+import '../../presentation/pages/home_page.dart';
+import '../../presentation/pages/lesson_page.dart';
+import '../../presentation/pages/task_page.dart';
 
 class AppRouter {
-  static const String splash = '/';
-  static const String login = '/login';
-  static const String register = '/register';
-  static const String studentDashboard = '/student-dashboard';
-  static const String parentDashboard = '/parent-dashboard';
-  static const String teacherDashboard = '/teacher-dashboard';
-  static const String lesson = '/lesson';
-  static const String quiz = '/quiz';
-  static const String achievements = '/achievements';
-  static const String aiChat = '/ai-chat';
-
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case splash:
-        return MaterialPageRoute(builder: (_) => const SplashPage());
+      case HomePage.routeName:
+        return MaterialPageRoute(builder: (_) => const HomePage());
 
-      case login:
-        return MaterialPageRoute(builder: (_) => const LoginPage());
-
-      case register:
-        return MaterialPageRoute(builder: (_) => const RegistrationPage());
-
-      case studentDashboard:
-        final userId = settings.arguments as String?;
-        return MaterialPageRoute(
-          builder: (_) => StudentDashboardPage(userId: userId ?? ''),
-        );
-
-      case parentDashboard:
-        // No ID parameter expected by ParentDashboardPage
-        return MaterialPageRoute(
-          builder: (_) => const ParentDashboardPage(),
-        );
-
-      case teacherDashboard:
-        // No ID parameter expected by TeacherDashboardPage
-        return MaterialPageRoute(
-          builder: (_) => const TeacherDashboardPage(),
-        );
-
-      case lesson:
+      case LessonPage.routeName:
         final args = settings.arguments as Map<String, dynamic>?;
+        if (args == null || !args.containsKey('lesson')) {
+          return _errorRoute('Missing lesson argument');
+        }
+        final lesson = args['lesson'] as Lesson; // <-- Now Lesson is recognized
         return MaterialPageRoute(
-          builder: (_) => LessonPage(
-            lessonId: args?['lessonId'] as int? ?? 1,
-          ),
+          builder: (_) => LessonPage(lesson: lesson),
         );
 
-      case quiz:
+      case TaskPage.routeName:
         final args = settings.arguments as Map<String, dynamic>?;
+        if (args == null || !args.containsKey('taskId')) {
+          return _errorRoute('Missing taskId argument');
+        }
+        final taskId = args['taskId'] as int;
         return MaterialPageRoute(
-          builder: (_) => QuizPage(
-            quizId: args?['quizId'] as int? ?? 1,
-          ),
+          builder: (_) => TaskPage(taskId: taskId),
         );
-
-      case achievements:
-        return MaterialPageRoute(builder: (_) => const AchievementsPage());
-
-      case aiChat:
-        return MaterialPageRoute(builder: (_) => const AIChatPage());
 
       default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: const Text('Page Not Found')),
-            body: const Center(child: Text('Page not found!')),
-          ),
-        );
+        return _errorRoute('Route not found');
     }
+  }
+
+  static Route<dynamic> _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(child: Text(message)),
+      ),
+    );
   }
 }

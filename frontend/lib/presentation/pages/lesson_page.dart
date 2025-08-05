@@ -7,6 +7,7 @@ import '../../core/services/api_service.dart';
 import '../../domain/entities/lesson.dart';
 
 class LessonPage extends StatefulWidget {
+  static const String routeName = '/lesson';
   final Lesson lesson;
   const LessonPage({super.key, required this.lesson});
 
