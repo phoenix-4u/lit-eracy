@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/app_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/loading_button.dart';
@@ -46,7 +45,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            Navigator.of(context).pushReplacementNamed(context, '/');
+            Navigator.of(context).pushReplacementNamed('/');
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),

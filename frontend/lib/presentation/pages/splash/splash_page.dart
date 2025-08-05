@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/app_router.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -47,7 +46,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     // Auto-navigate after splash
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed(context, '/');
+        Navigator.of(context).pushReplacementNamed('/');
       }
     });
   }

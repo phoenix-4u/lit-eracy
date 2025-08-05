@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../../core/services/api_service.dart';
-import '../../core/error/exceptions.dart';
 
 class TaskPage extends StatefulWidget {
   static const String routeName = '/task';
@@ -27,11 +26,13 @@ class _TaskPageState extends State<TaskPage> {
     setState(() => loading = true);
     try {
       final response = await _apiService.get('/api/tasks/${widget.taskId}');
+      if (!mounted) return;
       setState(() {
         task = response['data'] as Map<String, dynamic>?;
         loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading task: $e')),
@@ -48,7 +49,7 @@ class _TaskPageState extends State<TaskPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : task == null
-              ? Center(child: Text('Task not found.'))
+              ? const Center(child: Text('Task not found.'))
               : Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -73,11 +74,14 @@ class _TaskPageState extends State<TaskPage> {
                             try {
                               await _apiService.post(
                                   '/api/tasks/${widget.taskId}/complete', {});
+                              if (!mounted) return;
                               loadTask();
+                              if (!mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text('Task marked complete')));
                             } catch (e) {
+                              if (!mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content:

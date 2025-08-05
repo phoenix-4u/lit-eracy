@@ -139,7 +139,7 @@ class _LessonPageState extends State<LessonPage> {
               child: loading
                   ? const Center(child: CircularProgressIndicator())
                   : tasks.isEmpty
-                      ? Center(child: Text('No tasks for this lesson.'))
+                      ? const Center(child: Text('No tasks for this lesson.'))
                       : ListView.builder(
                           itemCount: tasks.length,
                           itemBuilder: (context, index) {
