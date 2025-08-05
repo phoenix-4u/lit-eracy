@@ -38,4 +38,7 @@ class User(Base):
         back_populates="child",
         cascade="all, delete-orphan"
     )
+    notifications     = relationship("Notification", back_populates="user")
+    sent_messages     = relationship("ChatMessage", foreign_keys="[ChatMessage.sender_id]", back_populates="sender")
+    received_messages = relationship("ChatMessage", foreign_keys="[ChatMessage.receiver_id]", back_populates="receiver")
 

@@ -12,6 +12,8 @@ from .parent import (
     ParentDashboardResponse, LinkChildRequest, LinkChildResponse,
     ChildDashboardData
 )
+from .notification import NotificationCreate, NotificationOut
+from .chat_message import ChatMessageCreate, ChatMessageOut
 
 __all__ = [
     # User schemas
@@ -33,4 +35,8 @@ __all__ = [
     # Parent schemas
     "ParentDashboardResponse", "LinkChildRequest", "LinkChildResponse",
     "ChildDashboardData",
+    # Notification schemas
+    "NotificationCreate", "NotificationOut",
+    # Chat message schemas
+    "ChatMessageCreate", "ChatMessageOut"
 ]

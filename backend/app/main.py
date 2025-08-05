@@ -12,9 +12,10 @@ from contextlib import asynccontextmanager
 
 from .database import init_db, close_db, get_async_db
 from .models import User, UserPoints
-from .routers import auth, parent, task, lesson
+from .routers import auth, parent, task, lesson, notification, chat_message
 from .core.config import settings
 from .services.ai_service import AIService
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -77,6 +78,8 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(parent.router, prefix="/api/parent", tags=["Parent"])
 app.include_router(task.router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(lesson.router, prefix="/api", tags=["Lessons"])
+app.include_router(notification.router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(chat_message.router, prefix="/api/chat_messages", tags=["ChatMessages"])
 
 
 # --- Root and Health Check Endpoints ---

@@ -1,8 +1,7 @@
-// File: /lib/presentation/pages/lesson_page.dart
+// File: lib/presentation/pages/lesson_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import '../../core/error/exceptions.dart';
 import '../../core/services/api_service.dart';
 import '../../domain/entities/lesson.dart';
 
@@ -29,13 +28,10 @@ class _LessonPageState extends State<LessonPage> {
   Future<void> fetchTasks() async {
     setState(() => loading = true);
     try {
-      final Map<String, dynamic> response =
-          await _apiService.get('/api/tasks/lesson/${widget.lesson.id}');
-      if (!mounted) return;
-
-      // The API service wraps List responses in {'data': List}
+      final Map<String, dynamic> response = await _apiService.get(
+        '/api/tasks/lesson/${widget.lesson.id}',
+      );
       final List<dynamic> taskList = (response['data'] as List<dynamic>?) ?? [];
-
       setState(() {
         tasks = taskList;
         loading = false;
@@ -79,25 +75,10 @@ class _LessonPageState extends State<LessonPage> {
         const SnackBar(content: Text('Task completed!')),
       );
       fetchTasks();
-    } on ServerException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message}')),
-      );
-    } on NetworkException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: ${e.message}')),
-      );
-    } on AuthenticationException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Auth error: ${e.message}')),
-      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unexpected error: $e')),
+        SnackBar(content: Text('Error completing task: $e')),
       );
     }
   }
@@ -146,19 +127,31 @@ class _LessonPageState extends State<LessonPage> {
                             final task = tasks[index] as Map<String, dynamic>;
                             final completed = task['is_completed'] == 1 ||
                                 task['is_completed'] == true;
-                            return Card(
-                              margin: const EdgeInsets.symmetric(vertical: 6),
-                              child: ListTile(
-                                title: Text(task['title'] ?? ''),
-                                subtitle: Text(task['description'] ?? ''),
-                                trailing: completed
-                                    ? const Icon(Icons.check,
-                                        color: Colors.green)
-                                    : ElevatedButton(
-                                        onPressed: () =>
-                                            completeTask(task['id'] as int),
-                                        child: const Text('Complete'),
-                                      ),
+
+                            // FIX: Wrap in InkWell to make it clickable
+                            return InkWell(
+                              onTap: () {
+                                // Navigate to task details page
+                                Navigator.pushNamed(
+                                  context,
+                                  '/task',
+                                  arguments: {'taskId': task['id']},
+                                );
+                              },
+                              child: Card(
+                                margin: const EdgeInsets.symmetric(vertical: 6),
+                                child: ListTile(
+                                  title: Text(task['title'] ?? ''),
+                                  subtitle: Text(task['description'] ?? ''),
+                                  trailing: completed
+                                      ? const Icon(Icons.check,
+                                          color: Colors.green)
+                                      : ElevatedButton(
+                                          onPressed: () =>
+                                              completeTask(task['id'] as int),
+                                          child: const Text('Complete'),
+                                        ),
+                                ),
                               ),
                             );
                           },

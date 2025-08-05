@@ -9,6 +9,8 @@ from .user_achievement import UserAchievement
 from .user_points import UserPoints
 from .user_progress import UserProgress
 from .user import User
+from .notification import Notification
+from .chat_message import ChatMessage
 
 __all__ = [
     "Achievement",
@@ -21,4 +23,6 @@ __all__ = [
     "UserPoints",
     "UserProgress",
     "User",
+    "Notification",
+    "ChatMessage"
 ]

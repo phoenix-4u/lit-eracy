@@ -87,6 +87,12 @@ class MyApp extends StatelessWidget {
           '/register': (context) => const RegistrationPage(),
           '/home': (context) => const HomePage(),
           '/ai': (context) => const AIPage(lessonId: 0),
+          '/task': (context) {
+            final args = ModalRoute.of(context)?.settings.arguments
+                as Map<String, dynamic>?;
+            final taskId = args?['taskId'] as int? ?? 0;
+            return TaskPage(taskId: taskId);
+          },
           // Add other static pages here as needed
         },
 
