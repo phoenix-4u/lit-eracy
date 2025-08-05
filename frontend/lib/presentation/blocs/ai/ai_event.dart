@@ -1,17 +1,10 @@
+// File: frontend/lib/presentation/blocs/ai/ai_event.dart
+
 part of 'ai_bloc.dart';
 
-abstract class AiEvent extends Equatable {
-  const AiEvent();
+abstract class AIEvent {}
 
-  @override
-  List<Object> get props => [];
-}
-
-class GenerateTask extends AiEvent {
+class GenerateTaskRequested extends AIEvent {
   final int lessonId;
-
-  const GenerateTask({required this.lessonId});
-
-  @override
-  List<Object> get props => [lessonId];
+  GenerateTaskRequested(this.lessonId);
 }

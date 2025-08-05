@@ -1,10 +1,9 @@
-
 import 'package:dartz/dartz.dart';
-import 'package:lit_eracy/core/error/exceptions.dart';
-import 'package:lit_eracy/core/error/failures.dart';
-import 'package:lit_eracy/data/datasources/remote/ai_remote_datasource.dart';
-import 'package:lit_eracy/domain/repositories/ai_repository.dart';
-import '../../domain/entities/task.dart';
+import '../../core/error/exceptions.dart';
+import '../../core/error/failures.dart';
+import '../datasources/remote/ai_remote_datasource.dart';
+import '../../domain/repositories/ai_repository.dart';
+import '../models/task_model.dart';
 
 class AIRepositoryImpl implements AIRepository {
   final AIRemoteDataSource remoteDataSource;
@@ -14,10 +13,10 @@ class AIRepositoryImpl implements AIRepository {
   @override
   Future<Either<Failure, Task>> generateTaskForLesson(int lessonId) async {
     try {
-      final task = await remoteDataSource.generateTaskForLesson(lessonId);
-      return Right(task);
-    } on ServerException {
-      return Left(ServerFailure());
+      final model = await remoteDataSource.generateTaskForLesson(lessonId);
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 }

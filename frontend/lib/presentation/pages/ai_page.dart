@@ -1,61 +1,63 @@
+// File: frontend/lib/presentation/pages/ai_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lit_eracy/presentation/blocs/ai/ai_bloc.dart';
+import '../blocs/ai/ai_bloc.dart';
+import '../../domain/entities/task.dart';
 
 class AIPage extends StatelessWidget {
-  const AIPage({super.key});
+  final int lessonId;
+  const AIPage({super.key, required this.lessonId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Task Generator'),
-      ),
-      body: BlocProvider(
-        create: (context) => AiBloc(generateTaskForLesson: context.read()),
-        child: BlocBuilder<AiBloc, AiState>(
+      appBar: AppBar(title: const Text('AI Task Generator')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: BlocConsumer<AIBloc, AIState>(
+          listener: (context, state) {
+            if (state is AIError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
           builder: (context, state) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (state is AiInitial)
-                    const Text('Click the button to generate a new task.'),
-                  if (state is AiLoading)
-                    const CircularProgressIndicator(),
-                  if (state is AiLoaded)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Text(
-                            state.task.title,
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(state.task.description),
-                        ],
-                      ),
-                    ),
-                  if (state is AiError)
-                    Text(
-                      state.message,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<AiBloc>().add(const GenerateTask(lessonId: 1));
-                    },
-                    child: const Text('Generate Task'),
-                  ),
-                ],
-              ),
-            );
+            if (state is AILoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is AILoaded) {
+              return TaskView(task: state.task);
+            } else {
+              return Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.read<AIBloc>().add(GenerateTaskRequested(lessonId));
+                  },
+                  child: const Text('Generate Task'),
+                ),
+              );
+            }
           },
         ),
       ),
+    );
+  }
+}
+
+class TaskView extends StatelessWidget {
+  final Task task;
+  const TaskView({super.key, required this.task});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Title: ${task.title}', style: const TextStyle(fontSize: 18)),
+        const SizedBox(height: 8),
+        Text(task.description),
+      ],
     );
   }
 }

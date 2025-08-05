@@ -1,33 +1,40 @@
-import '../../domain/entities/task.dart';
+import '../../domain/entities/task.dart' as entity;
 
-class TaskModel extends Task {
-  const TaskModel({
-    required int id,
-    required String title,
-    required String description,
-    required bool isCompleted,
-  }) : super(
-          id: id,
-          title: title,
-          description: description,
-          isCompleted: isCompleted,
-        );
+class TaskModel {
+  final int id;
+  final int lessonId;
+  final String title;
+  final String description;
+  final int isCompleted;
 
-  factory TaskModel.fromJson(Map<String, dynamic> json) {
-    return TaskModel(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      isCompleted: json['is_completed'] ?? false,
-    );
-  }
+  TaskModel(
+      {required this.id,
+      required this.lessonId,
+      required this.title,
+      required this.description,
+      required this.isCompleted});
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'is_completed': isCompleted,
-    };
-  }
+  factory TaskModel.fromJson(Map<String, dynamic> json) => TaskModel(
+        id: json['id'] as int,
+        lessonId: json['lesson_id'] as int,
+        title: json['title'] as String,
+        description: json['description'] as String,
+        isCompleted: json['is_completed'] as int,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'lesson_id': lessonId,
+        'title': title,
+        'description': description,
+        'is_completed': isCompleted,
+      };
+
+  entity.Task toEntity() => entity.Task(
+        id: id,
+        lessonId: lessonId,
+        title: title,
+        description: description,
+        isCompleted: isCompleted == 1,
+      );
 }

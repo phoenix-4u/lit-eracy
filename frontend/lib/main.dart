@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+// import 'package:http/http.dart' as http;
 
 import 'core/di.dart' as di;
 import 'core/theme/app_theme.dart';
@@ -17,7 +18,7 @@ import 'presentation/pages/splash/splash_page.dart';
 import 'presentation/pages/auth/login_page.dart';
 import 'presentation/pages/auth/registration_page.dart';
 import 'presentation/pages/home_page.dart';
-import 'package:lit_eracy/presentation/pages/ai_page.dart';
+import 'presentation/pages/ai_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,4 +90,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

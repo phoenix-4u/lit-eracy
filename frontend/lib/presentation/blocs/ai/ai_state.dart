@@ -1,30 +1,19 @@
+// File: frontend/lib/presentation/blocs/ai/ai_state.dart
+
 part of 'ai_bloc.dart';
 
-abstract class AiState extends Equatable {
-  const AiState();
+abstract class AIState {}
 
-  @override
-  List<Object> get props => [];
-}
+class AIInitial extends AIState {}
 
-class AiInitial extends AiState {}
+class AILoading extends AIState {}
 
-class AiLoading extends AiState {}
-
-class AiLoaded extends AiState {
+class AILoaded extends AIState {
   final Task task;
-
-  const AiLoaded({required this.task});
-
-  @override
-  List<Object> get props => [task];
+  AILoaded(this.task);
 }
 
-class AiError extends AiState {
+class AIError extends AIState {
   final String message;
-
-  const AiError({required this.message});
-
-  @override
-  List<Object> get props => [message];
+  AIError(this.message);
 }

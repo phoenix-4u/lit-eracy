@@ -102,7 +102,7 @@ Future<void> init() async {
   sl.registerLazySingleton<LocalStorageDataSource>(
       () => LocalStorageDataSourceImpl(sl()));
   sl.registerLazySingleton<AIRemoteDataSource>(
-      () => AIRemoteDataSourceImpl(client: sl()));
+      () => AIRemoteDataSourceImpl(http.Client()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
@@ -148,5 +148,7 @@ Future<void> init() async {
   sl.registerFactory(() => ContentBloc(getLessonsUseCase: sl()));
   sl.registerFactory(() => ProgressBloc(sl()));
   sl.registerFactory(() => AchievementsBloc(getAchievementsUseCase: sl()));
-  sl.registerFactory(() => AiBloc(generateTaskForLesson: sl()));
+  sl.registerFactory(() =>
+      AIRepositoryImpl(remoteDataSource: sl<AIRemoteDataSource>())
+          as AIRepository);
 }
