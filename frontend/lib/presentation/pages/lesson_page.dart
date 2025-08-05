@@ -24,36 +24,40 @@ class _LessonPageState extends State<LessonPage> {
   }
 
   Future<void> fetchTasks() async {
-    setState(() {
-      loading = true;
-    });
+    setState(() => loading = true);
 
-    final url = Uri.parse(
-      'http://localhost:8000/api/content/lessons/${widget.lesson.id}/tasks',
-    );
-    // If your backend uses /tasks/{lesson_id}, adjust the path accordingly.
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // Add auth headers here if your API requires them, e.g.:
-        // 'Authorization': 'Bearer <token>',
-      },
-    );
-    if (!mounted) return;
-    if (response.statusCode == 200) {
-      setState(() {
-        tasks = json.decode(response.body) as List<dynamic>;
-        loading = false;
-      });
-    } else {
-      setState(() {
-        loading = false;
-      });
+    final url =
+        Uri.parse('http://localhost:8000/api/tasks/${widget.lesson.id}');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer <token>',
+        },
+      );
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList =
+            json.decode(response.body) as List<dynamic>;
+        setState(() {
+          tasks = jsonList;
+          loading = false;
+        });
+      } else {
+        setState(() => loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to load tasks (${response.statusCode})')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to load tasks (${response.statusCode})')),
+        SnackBar(content: Text('Error loading tasks: $e')),
       );
     }
   }

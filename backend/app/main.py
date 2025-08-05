@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 
 from .database import init_db, close_db, get_async_db
 from .models import User, UserPoints
-from .routers import auth, parent
+from .routers import auth, parent, task
 from .core.config import settings
 from .services.ai_service import AIService
 
@@ -75,6 +75,7 @@ app.add_middleware(
 # Include API routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(parent.router, prefix="/api/parent", tags=["Parent"])
+app.include_router(task.router, prefix="/api/tasks", tags=["Tasks"])
 
 
 # --- Root and Health Check Endpoints ---
