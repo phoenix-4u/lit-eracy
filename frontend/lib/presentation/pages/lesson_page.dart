@@ -1,3 +1,5 @@
+// File: frontend/lib/presentation/pages/lesson_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -36,9 +38,8 @@ class _LessonPageState extends State<LessonPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading tasks: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error loading tasks: $e')));
     }
   }
 
@@ -47,16 +48,14 @@ class _LessonPageState extends State<LessonPage> {
     try {
       await _api.post('/api/lessons/${widget.lesson.id}/generate-task', {});
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Generated new task')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Generated new task')));
       await _fetchTasks();
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error generating task: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error generating task: $e')));
     }
   }
 
@@ -64,15 +63,13 @@ class _LessonPageState extends State<LessonPage> {
     try {
       await _api.post('/api/tasks/$id/complete', {});
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Task marked complete')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Task marked complete')));
       await _fetchTasks();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error completing task: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error completing task: $e')));
     }
   }
 
@@ -82,11 +79,13 @@ class _LessonPageState extends State<LessonPage> {
       appBar: AppBar(
         title: Text(widget.lesson.title),
         actions: [
+          // Refresh existing tasks
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _fetchTasks,
             tooltip: 'Refresh Tasks',
           ),
+          // ← THIS is the “+” button to generate AI tasks
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _generateTask,
@@ -102,16 +101,12 @@ class _LessonPageState extends State<LessonPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (widget.lesson.content.isNotEmpty) ...[
-                    Text(
-                      widget.lesson.content,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    Text(widget.lesson.content,
+                        style: Theme.of(context).textTheme.bodyMedium),
                     const SizedBox(height: 24),
                   ],
-                  Text(
-                    'Tasks:',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Text('Tasks:',
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
                   Expanded(
                     child: _tasks.isEmpty
