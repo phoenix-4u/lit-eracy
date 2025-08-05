@@ -17,6 +17,7 @@ import 'presentation/pages/splash/splash_page.dart';
 import 'presentation/pages/auth/login_page.dart';
 import 'presentation/pages/auth/registration_page.dart';
 import 'presentation/pages/home_page.dart';
+import 'package:lit_eracy/presentation/pages/ai_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,6 +81,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginPage(),
           '/register': (context) => const RegistrationPage(),
           '/home': (context) => const HomePage(),
+          '/ai': (context) => const AIPage(),
           // Add other pages here as you create them, e.g.:
           // '/student-dashboard': (context) => const StudentDashboardPage(),
         },
@@ -87,3 +89,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

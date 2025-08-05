@@ -10,6 +10,9 @@ import re
 # Note: In production, you would use actual AI models like Gemma
 # For this demo, we'll create a mock AI service that generates educational content
 
+import httpx
+from ..core.config import settings
+
 class AIService:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -23,7 +26,7 @@ class AIService:
             1: {  # Grade 1
                 "math": [
                     "Let's learn about numbers! Today we'll count from 1 to {number}. Can you count with me?",
-                    "Fun with shapes! A circle is round like a ball. A square has 4 equal sides.",
+                    "Fun with shapes! A A circle is round like a ball. A square has 4 equal sides.",
                     "Addition is like adding toys together. If you have 2 toys and get 1 more, you have 3 toys!"
                 ],
                 "english": [
@@ -77,6 +80,33 @@ class AIService:
                 ]
             }
         }
+
+    async def generate_task_with_ollama(self, lesson_content: str) -> Dict:
+        prompt = f"Based on the following lesson content, create a single, engaging task for a young student. The task should have a clear title and a short description. Return the response as a JSON object with 'title' and 'description' keys.\n\nLesson Content:\n{lesson_content}"
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    f"{settings.OLLAMA_API_URL}/api/generate",
+                    json={
+                        "model": "gemma:2b",
+                        "prompt": prompt,
+                        "stream": False,
+                        "format": "json"
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                response_json = response.json()
+                # The actual response from Ollama is a stringified JSON object in the 'response' field
+                task_data = json.loads(response_json.get("response", "{}"))
+                return task_data
+            except httpx.RequestError as e:
+                self.logger.error(f"Error connecting to Ollama: {e}")
+                raise
+            except json.JSONDecodeError as e:
+                self.logger.error(f"Error decoding JSON from Ollama: {e}")
+                raise
 
     async def generate_content(
         self, 

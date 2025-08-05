@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # AI Settings
+    OLLAMA_API_URL: str = "http://localhost:11434"
     AI_MODEL_PATH: str = "./models/gemma_2b_quantized.tflite"
     AI_MAX_TOKENS: int = 512
     AI_TEMPERATURE: float = 0.7

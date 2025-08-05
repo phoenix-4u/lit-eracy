@@ -1,3 +1,9 @@
+import '../../presentation/blocs/ai/ai_bloc.dart';
+import '../../domain/usecases/ai/generate_task_for_lesson.dart';
+import '../../data/repositories/ai_repository_impl.dart';
+import '../../domain/repositories/ai_repository.dart';
+import '../../data/datasources/remote/ai_remote_datasource.dart';
+
 // # File: frontend/lib/core/di/injection_container.dart (Final Fixed Version)
 
 import 'package:get_it/get_it.dart';
@@ -95,6 +101,8 @@ Future<void> init() async {
       () => ContentRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<LocalStorageDataSource>(
       () => LocalStorageDataSourceImpl(sl()));
+  sl.registerLazySingleton<AIRemoteDataSource>(
+      () => AIRemoteDataSourceImpl(client: sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
@@ -119,6 +127,8 @@ Future<void> init() async {
             remoteDataSource: sl(),
             localDataSource: sl(),
           ));
+  sl.registerLazySingleton<AIRepository>(
+      () => AIRepositoryImpl(remoteDataSource: sl()));
 
   // Use Cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -127,6 +137,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetLessonsUseCase(sl()));
   sl.registerLazySingleton(() => UpdateProgressUseCase(sl()));
   sl.registerLazySingleton(() => GetAchievementsUseCase(sl()));
+  sl.registerLazySingleton(() => GenerateTaskForLesson(sl()));
 
   // BLoCs
   sl.registerFactory(() => AuthBloc(
@@ -137,4 +148,5 @@ Future<void> init() async {
   sl.registerFactory(() => ContentBloc(getLessonsUseCase: sl()));
   sl.registerFactory(() => ProgressBloc(sl()));
   sl.registerFactory(() => AchievementsBloc(getAchievementsUseCase: sl()));
+  sl.registerFactory(() => AiBloc(generateTaskForLesson: sl()));
 }

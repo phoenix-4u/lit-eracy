@@ -1,9 +1,10 @@
 // File: frontend/lib/presentation/pages/lesson_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import '../../core/error/exceptions.dart';
+import '../../core/services/api_service.dart';
 import '../../domain/entities/lesson.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class LessonPage extends StatefulWidget {
   final Lesson lesson;
@@ -16,6 +17,7 @@ class LessonPage extends StatefulWidget {
 class _LessonPageState extends State<LessonPage> {
   List<dynamic> tasks = [];
   bool loading = true;
+  final ApiService _apiService = GetIt.instance<ApiService>();
 
   @override
   void initState() {
@@ -25,66 +27,68 @@ class _LessonPageState extends State<LessonPage> {
 
   Future<void> fetchTasks() async {
     setState(() => loading = true);
-
-    final url =
-        Uri.parse('http://localhost:8000/api/tasks/${widget.lesson.id}');
     try {
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer <token>',
-        },
-      );
+      final response = await _apiService.get('/api/tasks/${widget.lesson.id}');
       if (!mounted) return;
 
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonList =
-            json.decode(response.body) as List<dynamic>;
-        setState(() {
-          tasks = jsonList;
-          loading = false;
-        });
-      } else {
-        setState(() => loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Failed to load tasks (${response.statusCode})')),
-        );
-      }
+      setState(() {
+        tasks = response['data'] as List<dynamic>;
+        loading = false;
+      });
+    } on ServerException catch (e) {
+      if (!mounted) return;
+      setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message}')),
+      );
+    } on NetworkException catch (e) {
+      if (!mounted) return;
+      setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network Error: ${e.message}')),
+      );
+    } on AuthenticationException catch (e) {
+      if (!mounted) return;
+      setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Authentication Error: ${e.message}')),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading tasks: $e')),
+        SnackBar(content: Text('An unexpected error occurred: $e')),
       );
     }
   }
 
   Future<void> completeTask(int taskId) async {
-    final url =
-        Uri.parse('http://localhost:8000/api/content/tasks/$taskId/complete');
-    // Adjust path if needed
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // 'Authorization': 'Bearer <token>',
-      },
-    );
-    if (!mounted) return;
-    if (response.statusCode == 200) {
+    try {
+      await _apiService.post('/api/tasks/$taskId/complete', {});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Task completed!')),
       );
       fetchTasks();
-    } else {
+    } on ServerException catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to complete task (${response.statusCode})')),
+        SnackBar(content: Text('Error: ${e.message}')),
+      );
+    } on NetworkException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network Error: ${e.message}')),
+      );
+    } on AuthenticationException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Authentication Error: ${e.message}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An unexpected error occurred: $e')),
       );
     }
   }
