@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 
 from .database import init_db, close_db, get_async_db
 from .models import User, UserPoints
-from .routers import auth, parent, task, lesson, notification, chat_message
+from .routers import auth, parent, task, lesson, notification, chat_message, voice_qna
 from .core.config import settings
 from .services.ai_service_bkp import AIService
 
@@ -80,6 +80,7 @@ app.include_router(task.router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(lesson.router, prefix="/api", tags=["Lessons"])
 app.include_router(notification.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(chat_message.router, prefix="/api/chat_messages", tags=["ChatMessages"])
+app.include_router(voice_qna.router, prefix="/api", tags=["Voice Q&A"])
 
 
 # --- Root and Health Check Endpoints ---

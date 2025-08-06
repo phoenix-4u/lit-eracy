@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./ai_literacy_app.db"
     
     # Redis URL (To match the value from your error log)
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = "redis://192.168.2.233:6379/0"
     
     # Security
     SECRET_KEY: str = "your-super-secret-key-change-in-production"
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # AI Settings
-    OLLAMA_API_URL: str = "http://localhost:11434"
+    OLLAMA_API_URL: str = "http://192.168.2.233:11434"
     AI_MODEL_PATH: str = "./models/gemma_2b_quantized.tflite"
     AI_MAX_TOKENS: int = 512
     AI_TEMPERATURE: float = 0.7
