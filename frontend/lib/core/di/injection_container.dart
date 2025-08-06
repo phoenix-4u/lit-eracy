@@ -73,7 +73,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() {
     return Dio(
       BaseOptions(
-        baseUrl: ApiConfig.baseUrl, // e.g., 'http://localhost:8000'
+        baseUrl: ApiConfig.baseUrl, // e.g., 'http://192.168.2.233:8000'
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
         headers: {

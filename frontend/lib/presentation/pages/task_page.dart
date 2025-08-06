@@ -9,7 +9,7 @@ import '../../core/services/api_service.dart';
 class TaskPage extends StatefulWidget {
   static const String routeName = '/task';
   final int taskId;
-  const TaskPage({Key? key, required this.taskId}) : super(key: key);
+  const TaskPage({super.key, required this.taskId});
 
   @override
   State<TaskPage> createState() => _TaskPageState();

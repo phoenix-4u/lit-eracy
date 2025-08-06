@@ -8,7 +8,7 @@ class AppConstants {
       'AI-powered educational app for children';
 
   // API Configuration
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'http://192.168.2.233:8000';
   static const String apiUrl = '$baseUrl/api';
 
   // Storage Keys

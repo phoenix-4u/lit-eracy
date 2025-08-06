@@ -6,7 +6,7 @@ class AppConstants {
   static const String appVersion = '1.0.0';
 
   // API Endpoints
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'http://192.168.2.233:8000';
   static const String apiVersion = '/api';
 
   // Storage Keys

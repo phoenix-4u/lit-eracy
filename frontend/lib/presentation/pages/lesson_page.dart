@@ -5,11 +5,12 @@ import 'package:get_it/get_it.dart';
 import '../../core/services/api_service.dart';
 import '../../domain/entities/lesson.dart';
 import 'task_page.dart';
+import 'voice_qna_page.dart';
 
 class LessonPage extends StatefulWidget {
   static const String routeName = '/lesson';
   final Lesson lesson;
-  const LessonPage({Key? key, required this.lesson}) : super(key: key);
+  const LessonPage({super.key, required this.lesson});
 
   @override
   State<LessonPage> createState() => _LessonPageState();
@@ -38,8 +39,9 @@ class _LessonPageState extends State<LessonPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error loading tasks: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading tasks: $e')));
     }
   }
 
@@ -48,13 +50,15 @@ class _LessonPageState extends State<LessonPage> {
     try {
       await _api.post('/api/lessons/${widget.lesson.id}/generate-task', {});
       await _fetchTasks();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Generated new task')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Generated new task')));
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error generating task: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error generating task: $e')));
     }
   }
 
@@ -78,15 +82,8 @@ class _LessonPageState extends State<LessonPage> {
             fontWeight: FontWeight.bold,
             color: Colors.teal,
           ),
-          p: const TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-            height: 1.4,
-          ),
-          listBullet: const TextStyle(
-            fontSize: 16,
-            color: Colors.teal,
-          ),
+          p: const TextStyle(fontSize: 16, color: Colors.black87, height: 1.4),
+          listBullet: const TextStyle(fontSize: 16, color: Colors.teal),
         ),
       ),
     );
@@ -111,12 +108,26 @@ class _LessonPageState extends State<LessonPage> {
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.teal.shade400,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.mic),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VoiceQnAPage(lesson: widget.lesson),
+                ),
+              );
+            },
+            tooltip: 'Voice Q&A',
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _generateTask,
         backgroundColor: Colors.teal,
-        child: const Icon(Icons.add),
         tooltip: 'Generate Task',
+        child: const Icon(Icons.add),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -129,15 +140,23 @@ class _LessonPageState extends State<LessonPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Lesson Summary',
-                        style: TextStyle(
-                            fontSize: 20, color: Colors.teal.shade700)),
+                    Text(
+                      'Lesson Summary',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.teal.shade700,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     _buildSummary('**$title**\n\n$summary'),
                     const SizedBox(height: 24),
-                    Text('Tasks',
-                        style: TextStyle(
-                            fontSize: 20, color: Colors.green.shade700)),
+                    Text(
+                      'Tasks',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     _tasks.isEmpty
                         ? const Center(child: Text('No tasks found'))
@@ -149,7 +168,8 @@ class _LessonPageState extends State<LessonPage> {
                                 const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final task = _tasks[index];
-                              final completed = task['is_completed'] == 1 ||
+                              final completed =
+                                  task['is_completed'] == 1 ||
                                   task['is_completed'] == true;
                               return Card(
                                 child: ListTile(
@@ -165,8 +185,10 @@ class _LessonPageState extends State<LessonPage> {
                                   title: Text(task['title'] ?? ''),
                                   subtitle: Text(task['description'] ?? ''),
                                   trailing: completed
-                                      ? const Icon(Icons.check,
-                                          color: Colors.green)
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: Colors.green,
+                                        )
                                       : null,
                                 ),
                               );
