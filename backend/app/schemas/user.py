@@ -9,6 +9,7 @@ class UserResponse(BaseModel):
     full_name: Optional[str] = None
     age: Optional[int] = None
     is_active: bool = True
+    role: Optional[str] = None
 
     class Config:
         from_attributes = True

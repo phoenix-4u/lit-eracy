@@ -14,7 +14,7 @@ from .database import init_db, close_db, get_async_db
 from .models import User, UserPoints
 from .routers import auth, parent, task, lesson, notification, chat_message
 from .core.config import settings
-from .services.ai_service import AIService
+from .services.ai_service_bkp import AIService
 
 
 @asynccontextmanager
