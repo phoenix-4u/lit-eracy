@@ -14,6 +14,8 @@ from typing import Dict, Any, Optional
 import aiohttp
 import speech_recognition as sr
 from gtts import gTTS
+import av
+
 try:
     import librosa
     import soundfile as sf
@@ -28,7 +30,7 @@ class VoiceQnAService:
     def __init__(
         self,
         ollama_url: str = "http://localhost:11434",
-        model: str = "gemma3:2b"
+        model: str = "gemma3n:e2b"
     ):
         self.ollama_base_url = ollama_url
         self.model_name = model
@@ -104,29 +106,21 @@ class VoiceQnAService:
         await self._debug_audio_data(audio_data)
         
         try:
-            # Method 1: For AAC format, use file-based approach with librosa
+            # Prioritize AAC conversion if data looks like AAC
             if audio_data.startswith(b'\xff\xf1') or audio_data.startswith(b'\xff\xf9'):
-                if LIBROSA_AVAILABLE:
-                    wav_data = await self._convert_aac_with_temp_file(audio_data)
-                    if wav_data:
-                        return await self._recognize_from_wav(wav_data)
-                
-                # Fallback: try raw AAC processing
-                wav_data = await self._convert_aac_to_wav_fallback(audio_data)
+                wav_data = await self._convert_aac_to_wav_with_av(audio_data)
                 if wav_data:
                     return await self._recognize_from_wav(wav_data)
             
-            # Method 2: Use librosa for other formats
-            elif LIBROSA_AVAILABLE:
+            # Fallback to other methods if not AAC or if conversion fails
+            if LIBROSA_AVAILABLE:
                 wav_data = await self._convert_with_librosa(audio_data)
                 if wav_data:
                     return await self._recognize_from_wav(wav_data)
             
-            # Method 3: Try direct WAV processing
             elif audio_data.startswith(b'RIFF'):
                 return await self._recognize_from_wav(audio_data)
             
-            # Method 4: Try as raw PCM
             return await self._process_raw_pcm(audio_data)
 
         except sr.UnknownValueError:
@@ -139,40 +133,34 @@ class VoiceQnAService:
             logger.error(f"Error in speech to text: {e}")
             return None
 
-    async def _convert_aac_with_temp_file(self, aac_data: bytes) -> Optional[bytes]:
-        """Convert AAC to WAV using temporary file approach (works better with librosa)."""
-        temp_aac_path = None
-        temp_wav_path = None
-        
+    async def _convert_aac_to_wav_with_av(self, aac_data: bytes) -> Optional[bytes]:
+        """Convert AAC to WAV in memory using PyAV."""
         try:
-            # Write AAC data to temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.aac') as temp_aac:
-                temp_aac.write(aac_data)
-                temp_aac_path = temp_aac.name
-            
-            # Use librosa to convert AAC file to audio array
-            audio_array, sample_rate = librosa.load(
-                temp_aac_path,
-                sr=16000,  # Resample to 16kHz
-                mono=True  # Convert to mono
-            )
-            
-            # Convert to WAV bytes
+            input_buffer = BytesIO(aac_data)
             output_buffer = BytesIO()
-            sf.write(output_buffer, audio_array, 16000, format='WAV', subtype='PCM_16')
+
+            with av.open(input_buffer, mode='r') as input_container:
+                input_stream = input_container.streams.audio[0]
+                
+                output_container = av.open(output_buffer, mode='w', format='wav')
+                output_stream = output_container.add_stream('pcm_s16le', rate=16000, layout='mono')
+
+                for frame in input_container.decode(input_stream):
+                    for packet in output_stream.encode(frame):
+                        output_container.mux(packet)
+
+                # Flush any remaining packets
+                for packet in output_stream.encode(None):
+                    output_container.mux(packet)
+
+                output_container.close()
+
             output_buffer.seek(0)
-            
             return output_buffer.read()
-            
+
         except Exception as e:
-            logger.error(f"Error converting AAC with temp file: {e}")
+            logger.error(f"Error converting AAC with PyAV: {e}")
             return None
-        finally:
-            # Cleanup temporary files
-            if temp_aac_path and os.path.exists(temp_aac_path):
-                os.unlink(temp_aac_path)
-            if temp_wav_path and os.path.exists(temp_wav_path):
-                os.unlink(temp_wav_path)
 
     async def _convert_aac_to_wav_fallback(self, aac_data: bytes) -> Optional[bytes]:
         """Fallback AAC to WAV conversion without librosa."""
@@ -332,6 +320,7 @@ Provide a helpful, age-appropriate answer that:
 - Encourages further learning
 - Is conversational and friendly
 - Keeps the answer under 3 sentences for voice delivery
+- Answer the question directly when possible
 
 Answer:
 """

@@ -30,3 +30,4 @@ gtts
 pyaudio
 librosa
 soundfile
+av
