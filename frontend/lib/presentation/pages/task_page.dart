@@ -91,6 +91,13 @@ class _TaskPageState extends State<TaskPage>
       if (!mounted) return;
       await _loadTask();
       _showCompletionAnimation();
+      // FR-001: notify backend of progress update
+      await _api.post('/api/progress/update', {
+        'content_id': widget.taskId,
+        'completion_percentage':
+            1.0, // backend will compute, or send 1.0 for one task
+        'time_spent': 0 // optionally track time
+      });
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,10 +1,13 @@
+# File: backend/app/schemas/user_progress.py
+
 from pydantic import BaseModel
 
 class UserProgressBase(BaseModel):
     user_id: int
-    lesson_id: int
-    task_id: int
-    is_completed: bool
+    content_id: int  # renamed from lesson_id/task_id to match 'content_id'
+    completion_percentage: float
+    time_spent: int
+    is_completed: bool = False
 
 class UserProgressCreate(UserProgressBase):
     pass

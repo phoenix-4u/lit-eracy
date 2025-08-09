@@ -18,6 +18,8 @@ class LessonPage extends StatefulWidget {
 
 class _LessonPageState extends State<LessonPage> {
   final ApiService _api = GetIt.instance<ApiService>();
+  int _completedTasks = 0;
+  int _totalTasks = 0;
   bool _loading = true;
   List<Map<String, dynamic>> _tasks = [];
 
@@ -39,8 +41,15 @@ class _LessonPageState extends State<LessonPage> {
       final resp = await _api.get('/api/tasks/lesson/${widget.lesson.id}');
       final data = resp['data'] as List<dynamic>? ?? [];
       if (!mounted) return;
+      // update tasks and progress counts
+      final tasks = data.cast<Map<String, dynamic>>();
+      final completed = tasks
+          .where((t) => t['is_completed'] == 1 || t['is_completed'] == true)
+          .length;
       setState(() {
-        _tasks = data.cast<Map<String, dynamic>>();
+        _tasks = tasks;
+        _totalTasks = tasks.length;
+        _completedTasks = completed;
         _loading = false;
       });
     } catch (e) {
@@ -154,6 +163,19 @@ class _LessonPageState extends State<LessonPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // FR-001: Progress bar
+                    Text(
+                      'Progress: $_completedTasks / $_totalTasks tasks',
+                      style: TextStyle(color: Colors.teal.shade700),
+                    ),
+                    const SizedBox(height: 4),
+                    LinearProgressIndicator(
+                      value:
+                          _totalTasks > 0 ? _completedTasks / _totalTasks : 0,
+                      color: Colors.green,
+                      backgroundColor: Colors.green.shade100,
+                    ),
+                    const SizedBox(height: 24),
                     Text(
                       'Lesson Summary',
                       style: TextStyle(
