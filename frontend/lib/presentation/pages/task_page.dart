@@ -115,7 +115,7 @@ class _TaskPageState extends State<TaskPage>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.orange.withOpacity(0.3),
+                color: Colors.orange.withAlpha(77),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -344,7 +344,7 @@ class _TaskPageState extends State<TaskPage>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.orange.withOpacity(0.3),
+                          color: Colors.orange.withAlpha(77),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -457,8 +457,8 @@ class _TaskPageState extends State<TaskPage>
                                     ),
                                     elevation: completed ? 2 : 8,
                                     shadowColor: completed
-                                        ? Colors.green.withOpacity(0.3)
-                                        : Colors.purple.withOpacity(0.3),
+                                        ? Colors.green.withAlpha(77)
+                                        : Colors.purple.withAlpha(77),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,

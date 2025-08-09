@@ -11,6 +11,7 @@ import '../../widgets/lesson_card.dart';
 import '../../widgets/progress_card.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/lesson.dart';
+import '../../blocs/points/points_bloc.dart';
 
 class StudentDashboardPage extends StatefulWidget {
   final String userId;
@@ -65,6 +66,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     context.read<UserBloc>().add(LoadUserDashboard(userId: widget.userId));
     context.read<AchievementsBloc>().add(LoadAchievements());
     context.read<ContentBloc>().add(const LoadLessons());
+    context.read<PointsBloc>().add(LoadUserPoints(userId: widget.userId));
 
     // Start animations
     _welcomeAnimationController.forward();
@@ -92,6 +94,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                 .add(LoadUserDashboard(userId: widget.userId));
             context.read<AchievementsBloc>().add(LoadAchievements());
             context.read<ContentBloc>().add(const LoadLessons());
+            context.read<PointsBloc>().add(LoadUserPoints(userId: widget.userId));
           },
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
@@ -192,7 +195,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    backgroundColor: Colors.white.withAlpha(51),
                     child: Text(
                       userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
                       style: const TextStyle(
@@ -238,6 +241,21 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
           icon: const Icon(Icons.settings_outlined),
           onPressed: () {
             _navigateToSettings();
+          },
+        ),
+        BlocBuilder<PointsBloc, PointsState>(
+          builder: (context, state) {
+            if (state is PointsLoaded) {
+              return Chip(
+                avatar: const Icon(FontAwesomeIcons.gem, color: Colors.white),
+                label: Text(
+                  '${state.points.knowledgeGems}',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                backgroundColor: AppTheme.primaryBlue,
+              );
+            }
+            return const SizedBox.shrink();
           },
         ),
       ],

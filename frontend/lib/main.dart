@@ -12,6 +12,7 @@ import 'presentation/blocs/user/user_bloc.dart';
 import 'presentation/blocs/content/content_bloc.dart';
 import 'presentation/blocs/progress/progress_bloc.dart';
 import 'presentation/blocs/achievements/achievements_bloc.dart';
+import 'presentation/blocs/points/points_bloc.dart';
 import 'presentation/pages/splash/splash_page.dart';
 
 // FIX: Import the pages you want to navigate to
@@ -51,6 +52,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AchievementsBloc>(
           create: (context) => di.sl<AchievementsBloc>(),
+        ),
+        BlocProvider<PointsBloc>(
+          create: (context) => di.sl<PointsBloc>(),
         ),
       ],
       child: MaterialApp(

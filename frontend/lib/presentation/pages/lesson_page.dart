@@ -24,14 +24,21 @@ class _LessonPageState extends State<LessonPage> {
   @override
   void initState() {
     super.initState();
-    _fetchTasks();
+
+    // Delay the API call until after the widget is fully built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchTasks();
+    });
   }
 
   Future<void> _fetchTasks() async {
+    if (!mounted) return;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     setState(() => _loading = true);
     try {
       final resp = await _api.get('/api/tasks/lesson/${widget.lesson.id}');
       final data = resp['data'] as List<dynamic>? ?? [];
+      if (!mounted) return;
       setState(() {
         _tasks = data.cast<Map<String, dynamic>>();
         _loading = false;
@@ -39,26 +46,33 @@ class _LessonPageState extends State<LessonPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading tasks: $e')));
+      scaffoldMessenger
+          .showSnackBar(SnackBar(content: Text('Error loading tasks: $e')));
     }
   }
 
-  Future<void> _generateTask() async {
+  Future _generateTask() async {
     setState(() => _loading = true);
     try {
       await _api.post('/api/lessons/${widget.lesson.id}/generate-task', {});
       await _fetchTasks();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Generated new task')));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Generated new task')),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error generating task: $e')));
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error generating task: $e')),
+          );
+        }
+      });
     }
   }
 
@@ -168,8 +182,7 @@ class _LessonPageState extends State<LessonPage> {
                                 const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final task = _tasks[index];
-                              final completed =
-                                  task['is_completed'] == 1 ||
+                              final completed = task['is_completed'] == 1 ||
                                   task['is_completed'] == true;
                               return Card(
                                 child: ListTile(

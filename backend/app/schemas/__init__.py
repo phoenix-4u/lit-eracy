@@ -14,6 +14,7 @@ from .parent import (
 )
 from .notification import NotificationCreate, NotificationOut
 from .chat_message import ChatMessageCreate, ChatMessageOut
+from .user_points import UserPointsCreate, UserPointsUpdate, UserPointsOut, UserPoints
 
 __all__ = [
     # User schemas
@@ -38,5 +39,7 @@ __all__ = [
     # Notification schemas
     "NotificationCreate", "NotificationOut",
     # Chat message schemas
-    "ChatMessageCreate", "ChatMessageOut"
+    "ChatMessageCreate", "ChatMessageOut",
+    # User points schemas
+    "UserPointsCreate", "UserPointsUpdate", "UserPointsOut", "UserPoints"
 ]

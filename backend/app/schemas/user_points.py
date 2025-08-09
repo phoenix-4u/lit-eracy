@@ -24,3 +24,16 @@ class UserPointsUpdate(BaseModel):
     imagination_sparks: Optional[int] = Field(None, ge=0)
     current_streak: Optional[int] = Field(None, ge=0)
     last_activity_date: Optional[datetime] = None
+
+class UserPoints(UserPointsBase):
+    """Schema for UserPoints as stored in the database"""
+    id: int
+    user_id: int
+    last_activity_date: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class UserPointsOut(UserPoints):
+    """Schema for returning UserPoints to the client"""
+    pass

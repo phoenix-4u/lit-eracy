@@ -88,6 +88,8 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
   Future<void> _startRecording() async {
     if (!_hasPermission) return;
 
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     try {
       final directory = await getTemporaryDirectory();
       _recordingPath = '${directory.path}/voice_question.aac';
@@ -97,13 +99,15 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
         codec: Codec.aacADTS,
       );
 
+      if (!mounted) return;
+
       setState(() {
         _isRecording = true;
       });
 
       _pulseController.repeat(reverse: true);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Failed to start recording: $e')),
       );
     }
@@ -112,9 +116,13 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
   Future<void> _stopRecording() async {
     if (!_isRecording) return;
 
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     try {
       await _recorder!.stopRecorder();
       _pulseController.stop();
+
+      if (!mounted) return;
 
       setState(() {
         _isRecording = false;
@@ -123,12 +131,14 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
 
       await _processVoiceQuestion();
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
         _isRecording = false;
         _isProcessing = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Failed to stop recording: $e')),
       );
     }
@@ -136,6 +146,8 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
 
   Future<void> _processVoiceQuestion() async {
     if (_recordingPath == null) return;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     try {
       final file = File(_recordingPath!);
@@ -162,6 +174,8 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
       // Send request
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
+
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         final result = json.decode(responseBody);
@@ -194,18 +208,22 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
         throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error processing question: $e')),
       );
     } finally {
-      setState(() {
-        _isProcessing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
     }
   }
 
   Future<void> _playAudioResponse(String base64Audio) async {
     if (base64Audio.isEmpty) return;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     try {
       // Decode base64 audio
@@ -218,6 +236,7 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
       await audioFile.writeAsBytes(audioData);
 
       // Play the audio
+      if (!mounted) return;
       setState(() {
         _isPlaying = true;
       });
@@ -225,16 +244,20 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
       await _audioPlayer.play(DeviceFileSource(audioPath));
 
       _audioPlayer.onPlayerComplete.listen((_) {
+        if (mounted) {
+          setState(() {
+            _isPlaying = false;
+          });
+        }
+      });
+    } catch (e) {
+      if (mounted) {
         setState(() {
           _isPlaying = false;
         });
-      });
-    } catch (e) {
-      setState(() {
-        _isPlaying = false;
-      });
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Error playing audio: $e')),
       );
     }
@@ -390,7 +413,7 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: Colors.grey.withAlpha(51),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -436,7 +459,7 @@ class _VoiceQnAPageState extends State<VoiceQnAPage>
                               BoxShadow(
                                 color:
                                     (_isRecording ? Colors.red : Colors.purple)
-                                        .withOpacity(0.3),
+                                        .withAlpha(77),
                                 blurRadius: 15,
                                 offset: const Offset(0, 5),
                               ),

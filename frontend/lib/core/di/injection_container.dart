@@ -50,6 +50,7 @@ import '../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../domain/usecases/content/get_lessons_usecase.dart';
 import '../../domain/usecases/progress/update_progress_usecase.dart';
 import '../../domain/usecases/achievements/get_achievements_usecase.dart';
+import '../../domain/usecases/user/get_user_points_usecase.dart';
 
 // BLoCs
 import '../../presentation/blocs/auth/auth_bloc.dart';
@@ -57,6 +58,7 @@ import '../../presentation/blocs/user/user_bloc.dart';
 import '../../presentation/blocs/content/content_bloc.dart';
 import '../../presentation/blocs/progress/progress_bloc.dart';
 import '../../presentation/blocs/achievements/achievements_bloc.dart';
+import '../../presentation/blocs/points/points_bloc.dart';
 import '../../presentation/blocs/ai/ai_bloc.dart';
 
 final sl = GetIt.instance;
@@ -115,7 +117,6 @@ Future<void> init() async {
       ));
   sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(
         remoteDataSource: sl(),
-        localDataSource: sl(),
       ));
   sl.registerLazySingleton<ContentRepository>(() => ContentRepositoryImpl(
         remoteDataSource: sl(),
@@ -140,6 +141,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetLessonsUseCase(sl()));
   sl.registerLazySingleton(() => UpdateProgressUseCase(sl()));
   sl.registerLazySingleton(() => GetAchievementsUseCase(sl()));
+  sl.registerLazySingleton(() => GetUserPointsUseCase(sl()));
   sl.registerLazySingleton(() => GenerateTaskForLesson(sl()));
 
   // BLoCs
@@ -151,5 +153,6 @@ Future<void> init() async {
   sl.registerFactory(() => ContentBloc(getLessonsUseCase: sl()));
   sl.registerFactory(() => ProgressBloc(sl()));
   sl.registerFactory(() => AchievementsBloc(getAchievementsUseCase: sl()));
+  sl.registerFactory(() => PointsBloc(getUserPointsUseCase: sl()));
   sl.registerFactory(() => AIBloc(generateUseCase: sl()));
 }

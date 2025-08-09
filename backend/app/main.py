@@ -32,27 +32,27 @@ async def lifespan(app: FastAPI):
     app.state.ai_service = AIService()
     
     # Initialize Redis Connection using REDIS_URL from settings
-    try:
-        # Use redis.asyncio and connect via the URL for async compatibility
-        app.state.redis_client = await redis.from_url(
-            settings.REDIS_URL,
-            encoding="utf-8",
-            decode_responses=True
-        )
-        # Asynchronously ping to test the connection
-        await app.state.redis_client.ping()
-        print("INFO:     Successfully connected to Redis.")
-    except Exception as e:
-        print(f"WARNING:  Redis connection failed: {e}. Continuing without Redis.")
-        app.state.redis_client = None
+    # try:
+    #     # Use redis.asyncio and connect via the URL for async compatibility
+    #     app.state.redis_client = await redis.from_url(
+    #         settings.REDIS_URL,
+    #         encoding="utf-8",
+    #         decode_responses=True
+    #     )
+    #     # Asynchronously ping to test the connection
+    #     await app.state.redis_client.ping()
+    #     print("INFO:     Successfully connected to Redis.")
+    # except Exception as e:
+    #     print(f"WARNING:  Redis connection failed: {e}. Continuing without Redis.")
+    #     app.state.redis_client = None
     
     yield
     
     # --- Shutdown Logic ---
     print("INFO:     Application shutdown...")
-    if hasattr(app.state, 'redis_client') and app.state.redis_client:
-        await app.state.redis_client.close()
-        print("INFO:     Redis connection closed.")
+    # if hasattr(app.state, 'redis_client') and app.state.redis_client:
+    #     await app.state.redis_client.close()
+    #     print("INFO:     Redis connection closed.")
     await close_db()
 
 
@@ -98,7 +98,7 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "database_status": "connected", # Simplified for now
-        "redis_status": "connected" if app.state.redis_client else "disconnected",
+        # "redis_status": "connected" if app.state.redis_client else "disconnected",
         "ai_service_status": "active"
     }
 

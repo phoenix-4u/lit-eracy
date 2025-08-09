@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 class AIService:
-    def __init__(self, ollama_url: str = "http://192.168.2.233:11434", model: str = "gemma3n:e2b"):
+    def __init__(self, ollama_url: str = "http://localhost:11434", model: str = "gemma3n:e2b"):
         self.ollama_base_url = ollama_url
         self.model_name = model
     

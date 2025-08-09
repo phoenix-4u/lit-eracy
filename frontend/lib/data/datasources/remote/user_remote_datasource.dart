@@ -1,15 +1,13 @@
-// # File: frontend/lib/data/datasources/remote/user_remote_datasource.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../config/api_config.dart';
 import '../../../core/error/exceptions.dart';
+import '../../../domain/entities/user.dart';
+import '../../../domain/entities/user_points.dart';
 
 abstract class UserRemoteDataSource {
-  Future<Map<String, dynamic>> getUserProfile(String userId);
-  Future<Map<String, dynamic>> updateUserProfile(Map<String, dynamic> userData);
-  Future<void> deleteUser(String userId);
-  Future<List<Map<String, dynamic>>> getUsers({int? page, int? limit});
+  Future<UserPoints> getUserPoints(String userId);
+  Future<User> getUserProfile(String userId);
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -18,98 +16,30 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   UserRemoteDataSourceImpl(this.client);
 
   @override
-  Future<Map<String, dynamic>> getUserProfile(String userId) async {
-    try {
-      final response = await client.get(
-        Uri.parse('${ApiConfig.baseUrl}${ApiConfig.usersEndpoint}/$userId'),
-        headers: ApiConfig.defaultHeaders,
-      );
+  Future<UserPoints> getUserPoints(String userId) async {
+    final response = await client.get(
+      Uri.parse('${ApiConfig.baseUrl}/api/tasks/points'),
+      headers: ApiConfig.defaultHeaders,
+    );
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return jsonData['user'] as Map<String, dynamic>;
-      } else if (response.statusCode == 404) {
-        throw const ServerException('User not found');
-      } else {
-        throw ServerException(
-            'Failed to get user profile: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error while getting user profile');
+    if (response.statusCode == 200) {
+      return UserPoints.fromJson(json.decode(response.body));
+    } else {
+      throw const ServerException('Failed to get user points');
     }
   }
 
   @override
-  Future<Map<String, dynamic>> updateUserProfile(
-      Map<String, dynamic> userData) async {
-    try {
-      final response = await client.put(
-        Uri.parse(
-            '${ApiConfig.baseUrl}${ApiConfig.usersEndpoint}/${userData['id']}'),
-        headers: ApiConfig.defaultHeaders,
-        body: json.encode(userData),
-      );
+  Future<User> getUserProfile(String userId) async {
+    final response = await client.get(
+      Uri.parse('${ApiConfig.baseUrl}/api/auth/me'),
+      headers: ApiConfig.defaultHeaders,
+    );
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return jsonData['user'] as Map<String, dynamic>;
-      } else {
-        throw ServerException(
-            'Failed to update user profile: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error while updating user profile');
-    }
-  }
-
-  @override
-  Future<void> deleteUser(String userId) async {
-    try {
-      final response = await client.delete(
-        Uri.parse('${ApiConfig.baseUrl}${ApiConfig.usersEndpoint}/$userId'),
-        headers: ApiConfig.defaultHeaders,
-      );
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw ServerException('Failed to delete user: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error while deleting user');
-    }
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getUsers({int? page, int? limit}) async {
-    try {
-      final queryParams = <String, String>{};
-      if (page != null) queryParams['page'] = page.toString();
-      if (limit != null) queryParams['limit'] = limit.toString();
-
-      final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.usersEndpoint}')
-          .replace(queryParameters: queryParams);
-
-      final response = await client.get(uri, headers: ApiConfig.defaultHeaders);
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(jsonData['users'] ?? []);
-      } else {
-        throw ServerException('Failed to get users: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw const NetworkException('Network error while getting users');
+    if (response.statusCode == 200) {
+      return User.fromJson(json.decode(response.body));
+    } else {
+      throw const ServerException('Failed to get user profile');
     }
   }
 }
