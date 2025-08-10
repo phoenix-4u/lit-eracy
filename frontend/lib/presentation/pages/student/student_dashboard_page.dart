@@ -1,4 +1,4 @@
-// # File: frontend/lib/presentation/pages/student/student_dashboard_page.dart (Fixed)
+// File: frontend/lib/presentation/pages/student/student_dashboard_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,16 +10,11 @@ import '../../widgets/achievement_badge.dart';
 import '../../widgets/lesson_card.dart';
 import '../../widgets/progress_card.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/token_storage.dart';
 import '../../../domain/entities/lesson.dart';
-import '../../blocs/points/points_bloc.dart';
 
 class StudentDashboardPage extends StatefulWidget {
-  final String userId;
-
-  const StudentDashboardPage({
-    super.key,
-    required this.userId,
-  });
+  const StudentDashboardPage({super.key});
 
   @override
   State<StudentDashboardPage> createState() => _StudentDashboardPageState();
@@ -62,17 +57,23 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
       curve: Curves.elasticOut,
     ));
 
-    // Load user dashboard data
-    context.read<UserBloc>().add(LoadUserDashboard(userId: widget.userId));
-    context.read<AchievementsBloc>().add(LoadAchievements());
-    context.read<ContentBloc>().add(const LoadLessons());
-    context.read<PointsBloc>().add(LoadUserPoints(userId: widget.userId));
+    // Load dashboard data
+    loadDashboardData();
 
     // Start animations
     _welcomeAnimationController.forward();
     Future.delayed(const Duration(milliseconds: 300), () {
       _statsAnimationController.forward();
     });
+  }
+
+  Future<void> loadDashboardData() async {
+    final token = await TokenStorage.getToken();
+    if (mounted) {
+      context.read<UserBloc>().add(LoadUserDashboardWithToken(token: token));
+      context.read<AchievementsBloc>().add(LoadAchievements());
+      context.read<ContentBloc>().add(const LoadLessons());
+    }
   }
 
   @override
@@ -88,19 +89,12 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
       backgroundColor: AppTheme.lightBackground,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {
-            context
-                .read<UserBloc>()
-                .add(LoadUserDashboard(userId: widget.userId));
-            context.read<AchievementsBloc>().add(LoadAchievements());
-            context.read<ContentBloc>().add(const LoadLessons());
-            context.read<PointsBloc>().add(LoadUserPoints(userId: widget.userId));
-          },
+          onRefresh: loadDashboardData,
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               // Custom App Bar
-              _buildCustomAppBar(),
+              buildCustomAppBar(),
 
               // Welcome Section
               SliverToBoxAdapter(
@@ -111,7 +105,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                       scale: _welcomeAnimation.value,
                       child: Opacity(
                         opacity: _welcomeAnimation.value,
-                        child: _buildWelcomeSection(),
+                        child: buildWelcomeSection(),
                       ),
                     );
                   },
@@ -127,7 +121,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                       offset: Offset(0, 50 * (1 - _statsAnimation.value)),
                       child: Opacity(
                         opacity: _statsAnimation.value,
-                        child: _buildStatsSection(),
+                        child: buildStatsSection(),
                       ),
                     );
                   },
@@ -136,22 +130,22 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
 
               // Achievement Section
               SliverToBoxAdapter(
-                child: _buildAchievementsSection(),
+                child: buildAchievementsSection(),
               ),
 
               // Progress Section
               SliverToBoxAdapter(
-                child: _buildProgressSection(),
+                child: buildProgressSection(),
               ),
 
               // Recent Lessons
               SliverToBoxAdapter(
-                child: _buildRecentLessonsSection(),
+                child: buildRecentLessonsSection(),
               ),
 
               // AI Assistant Quick Access
               SliverToBoxAdapter(
-                child: _buildAIAssistantSection(),
+                child: buildAIAssistantSection(),
               ),
 
               // Bottom padding
@@ -162,11 +156,11 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: buildFloatingActionButton(),
     );
   }
 
-  Widget _buildCustomAppBar() {
+  Widget buildCustomAppBar() {
     return SliverAppBar(
       expandedHeight: 80,
       floating: true,
@@ -234,22 +228,22 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
         IconButton(
           icon: const Icon(Icons.notifications_outlined),
           onPressed: () {
-            _showNotifications(context);
+            showNotifications(context);
           },
         ),
         IconButton(
           icon: const Icon(Icons.settings_outlined),
           onPressed: () {
-            _navigateToSettings();
+            navigateToSettings();
           },
         ),
-        BlocBuilder<PointsBloc, PointsState>(
+        BlocBuilder<UserBloc, UserState>(
           builder: (context, state) {
-            if (state is PointsLoaded) {
+            if (state is UserLoaded) {
               return Chip(
                 avatar: const Icon(FontAwesomeIcons.gem, color: Colors.white),
                 label: Text(
-                  '${state.points.knowledgeGems}',
+                  '${state.totalPoints}',
                   style: const TextStyle(color: Colors.white),
                 ),
                 backgroundColor: AppTheme.primaryBlue,
@@ -262,7 +256,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildWelcomeSection() {
+  Widget buildWelcomeSection() {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -329,7 +323,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                 return Row(
                   children: [
                     Expanded(
-                      child: _buildMiniStatCard(
+                      child: buildMiniStatCard(
                         'Study Time',
                         '2h 30m',
                         FontAwesomeIcons.clock,
@@ -338,9 +332,9 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildMiniStatCard(
+                      child: buildMiniStatCard(
                         'This Week',
-                        '5 lessons',
+                        '${state.numLessons} lessons',
                         FontAwesomeIcons.calendar,
                         AppTheme.primaryOrange,
                       ),
@@ -356,7 +350,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildMiniStatCard(
+  Widget buildMiniStatCard(
       String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -406,7 +400,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildStatsSection() {
+  Widget buildStatsSection() {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         if (state is UserLoaded) {
@@ -415,9 +409,9 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
             child: Row(
               children: [
                 Expanded(
-                  child: _buildStatCard(
+                  child: buildStatCard(
                     'Points',
-                    '${state.points}',
+                    '${state.totalPoints}',
                     FontAwesomeIcons.star,
                     AppTheme.achievementGold,
                     AppTheme.achievementGold.withValues(alpha: 0.1),
@@ -425,7 +419,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildStatCard(
+                  child: buildStatCard(
                     'Level',
                     '${state.level}',
                     FontAwesomeIcons.trophy,
@@ -435,9 +429,9 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildStatCard(
+                  child: buildStatCard(
                     'Streak',
-                    '${state.streakDays}',
+                    '${state.currentStreak}',
                     FontAwesomeIcons.fire,
                     AppTheme.primaryOrange,
                     AppTheme.primaryOrange.withValues(alpha: 0.1),
@@ -447,12 +441,12 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
             ),
           );
         }
-        return _buildSkeletonStats();
+        return buildSkeletonStats();
       },
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color,
+  Widget buildStatCard(String title, String value, IconData icon, Color color,
       Color backgroundColor) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -504,7 +498,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildSkeletonStats() {
+  Widget buildSkeletonStats() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -524,7 +518,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildAchievementsSection() {
+  Widget buildAchievementsSection() {
     return Container(
       margin: const EdgeInsets.all(16),
       child: Column(
@@ -551,7 +545,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
               ),
               TextButton(
                 onPressed: () {
-                  _navigateToAchievements();
+                  navigateToAchievements();
                 },
                 child: const Text('View All'),
               ),
@@ -562,7 +556,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
             builder: (context, state) {
               if (state is AchievementsLoaded) {
                 if (state.achievements.isEmpty) {
-                  return _buildEmptyAchievements();
+                  return buildEmptyAchievements();
                 }
                 return SizedBox(
                   height: 120,
@@ -581,7 +575,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                   ),
                 );
               }
-              return _buildSkeletonAchievements();
+              return buildSkeletonAchievements();
             },
           ),
         ],
@@ -589,7 +583,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildEmptyAchievements() {
+  Widget buildEmptyAchievements() {
     return Container(
       height: 120,
       padding: const EdgeInsets.all(20),
@@ -624,7 +618,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildSkeletonAchievements() {
+  Widget buildSkeletonAchievements() {
     return SizedBox(
       height: 120,
       child: ListView.builder(
@@ -644,7 +638,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildProgressSection() {
+  Widget buildProgressSection() {
     return Container(
       margin: const EdgeInsets.all(16),
       child: Column(
@@ -707,7 +701,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildRecentLessonsSection() {
+  Widget buildRecentLessonsSection() {
     return Container(
       margin: const EdgeInsets.all(16),
       child: Column(
@@ -734,34 +728,45 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
               ),
               TextButton(
                 onPressed: () {
-                  _navigateToAllLessons();
+                  navigateToAllLessons();
                 },
                 child: const Text('View All'),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          BlocBuilder<ContentBloc, ContentState>(
+          BlocBuilder<UserBloc, UserState>(
             builder: (context, state) {
-              if (state is ContentLoaded) {
-                if (state.lessons.isEmpty) {
-                  return _buildEmptyLessons();
+              if (state is UserLoaded) {
+                if (state.recentLessons.isEmpty) {
+                  return buildEmptyLessons();
                 }
                 return Column(
-                  children: state.lessons.take(3).map((lesson) {
+                  children: state.recentLessons.take(3).map((lessonEntity) {
+                    // Convert LessonInfoEntity to Lesson for LessonCard
+                    final lesson = Lesson(
+                      id: lessonEntity.id,
+                      title: lessonEntity.title,
+                      subject: lessonEntity.subject,
+                      gradeLevel: lessonEntity.gradeLevel,
+                      pointsReward: lessonEntity.pointsReward,
+                      estimatedDuration: lessonEntity.estimatedDuration,
+                      description: '', // Add default if needed
+                      isCompleted: false, // Add default if needed
+                    );
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: LessonCard(
                         lesson: lesson,
                         onTap: () {
-                          _navigateToLesson(lesson);
+                          navigateToLesson(lesson);
                         },
                       ),
                     );
                   }).toList(),
                 );
               }
-              return _buildSkeletonLessons();
+              return buildSkeletonLessons();
             },
           ),
         ],
@@ -769,7 +774,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildEmptyLessons() {
+  Widget buildEmptyLessons() {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -806,7 +811,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildSkeletonLessons() {
+  Widget buildSkeletonLessons() {
     return Column(
       children: List.generate(3, (index) {
         return Container(
@@ -821,7 +826,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildAIAssistantSection() {
+  Widget buildAIAssistantSection() {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -878,7 +883,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
           ),
           ElevatedButton(
             onPressed: () {
-              _navigateToAIChat();
+              navigateToAIChat();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryPurple,
@@ -894,10 +899,10 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget buildFloatingActionButton() {
     return FloatingActionButton.extended(
       onPressed: () {
-        _showQuickActions(context);
+        showQuickActions(context);
       },
       backgroundColor: AppTheme.primaryBlue,
       foregroundColor: Colors.white,
@@ -907,28 +912,28 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
   }
 
   // Navigation Methods
-  void _navigateToSettings() {
+  void navigateToSettings() {
     // Navigator.pushNamed(context, '/settings');
   }
 
-  void _navigateToAchievements() {
+  void navigateToAchievements() {
     // Navigator.pushNamed(context, '/achievements');
   }
 
-  void _navigateToAllLessons() {
+  void navigateToAllLessons() {
     // Navigator.pushNamed(context, '/lessons');
   }
 
-  void _navigateToLesson(Lesson lesson) {
+  void navigateToLesson(Lesson lesson) {
     // Navigator.pushNamed(context, '/lesson', arguments: lesson);
   }
 
-  void _navigateToAIChat() {
+  void navigateToAIChat() {
     // Navigator.pushNamed(context, '/ai-chat');
   }
 
   // Dialog Methods
-  void _showNotifications(BuildContext context) {
+  void showNotifications(BuildContext context) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -977,7 +982,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  void _showQuickActions(BuildContext context) {
+  void showQuickActions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -997,34 +1002,34 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
                     ),
               ),
               const SizedBox(height: 20),
-              _buildQuickActionTile(
+              buildQuickActionTile(
                 'Start New Lesson',
                 'Begin a new learning session',
                 FontAwesomeIcons.play,
                 AppTheme.primaryBlue,
                 () {
                   Navigator.pop(context);
-                  _navigateToAllLessons();
+                  navigateToAllLessons();
                 },
               ),
-              _buildQuickActionTile(
+              buildQuickActionTile(
                 'Take Quiz',
                 'Test your knowledge',
-                FontAwesomeIcons.circleQuestion, // Fixed deprecated icon
+                FontAwesomeIcons.circleQuestion,
                 AppTheme.primaryGreen,
                 () {
                   Navigator.pop(context);
                   // Navigate to quiz
                 },
               ),
-              _buildQuickActionTile(
+              buildQuickActionTile(
                 'Chat with AI',
                 'Get help from AI assistant',
                 FontAwesomeIcons.robot,
                 AppTheme.primaryPurple,
                 () {
                   Navigator.pop(context);
-                  _navigateToAIChat();
+                  navigateToAIChat();
                 },
               ),
               const SizedBox(height: 20),
@@ -1035,7 +1040,7 @@ class _StudentDashboardPageState extends State<StudentDashboardPage>
     );
   }
 
-  Widget _buildQuickActionTile(
+  Widget buildQuickActionTile(
     String title,
     String subtitle,
     IconData icon,

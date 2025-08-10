@@ -1,4 +1,4 @@
-// # File: frontend/lib/presentation/blocs/user/user_event.dart (Extended)
+// File: frontend/lib/presentation/blocs/user/user_event.dart
 
 part of 'user_bloc.dart';
 
@@ -9,14 +9,7 @@ abstract class UserEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadUserProfile extends UserEvent {
-  final String userId;
-
-  const LoadUserProfile({required this.userId});
-
-  @override
-  List<Object> get props => [userId];
-}
+class LoadUserProfile extends UserEvent {}
 
 class LoadUserDashboard extends UserEvent {
   final String userId;
@@ -25,6 +18,15 @@ class LoadUserDashboard extends UserEvent {
 
   @override
   List<Object> get props => [userId];
+}
+
+class LoadUserDashboardWithToken extends UserEvent {
+  final String token;
+
+  const LoadUserDashboardWithToken({required this.token});
+
+  @override
+  List<Object> get props => [token];
 }
 
 class UpdateUserProfile extends UserEvent {

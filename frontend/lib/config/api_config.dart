@@ -27,6 +27,11 @@ class ApiConfig {
   static const String updateProgressEndpoint =
       '$baseUrl$apiVersion/progress/update';
 
+  // Dashboard endpoints (new)
+  static const String studentDashboardEndpoint =
+      '$baseUrl$apiVersion/dashboard/student';
+  // static const String teacherDashboardEndpoint = '$baseUrl$apiVersion/dashboard/teacher';
+
   // AI endpoints
   static const String aiChatEndpoint = '$baseUrl$apiVersion/ai/chat';
   static const String generateContentEndpoint =

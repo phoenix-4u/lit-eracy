@@ -5,6 +5,7 @@ import '../../domain/repositories/user_repository.dart';
 import '../../core/error/failures.dart';
 import '../../core/error/exceptions.dart';
 import '../datasources/remote/user_remote_datasource.dart';
+import '../../domain/entities/dashboard_entity.dart';
 
 class UserRepositoryImpl implements UserRepository {
   final UserRemoteDataSource remoteDataSource;
@@ -26,6 +27,17 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final user = await remoteDataSource.getUserProfile(userId);
       return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, DashboardEntity>> fetchStudentDashboard(
+      String token) async {
+    try {
+      final dashboardModel = await remoteDataSource.getStudentDashboard(token);
+      return Right(DashboardEntity.fromModel(dashboardModel));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
