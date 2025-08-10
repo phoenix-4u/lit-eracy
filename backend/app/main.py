@@ -181,10 +181,12 @@ async def get_achievements():
     ]
     return achievements
 
+from .schemas.user_progress import UserProgressCreate
+
 @app.post("/api/progress/update")
-async def update_progress(content_id: int, completion_percentage: float, time_spent: int, current_user: User = Depends(auth.get_current_active_user), db: AsyncSession = Depends(get_async_db)):
+async def update_progress(progress: UserProgressCreate, current_user: User = Depends(auth.get_current_active_user), db: AsyncSession = Depends(get_async_db)):
     # This endpoint will update the UserProgress table in a real implementation
-    return {"message": "Progress updated successfully", "user": current_user.username, "content_id": content_id}
+    return {"message": "Progress updated successfully", "user": current_user.username, "content_id": progress.content_id}
 
 # --- Uvicorn Runner ---
 if __name__ == "__main__":
